@@ -27,6 +27,20 @@ export function apiUrl(path: string): string {
 	return `${base}${finalPath}`;
 }
 
+function applyCsrfOriginHeaders(event: RequestEvent, headers: Headers): void {
+	// Django CSRF apsauga HTTPS režime dažnai reikalauja `Origin` ir/arba `Referer`.
+	// Kadangi šiuos requestus darome server-side (proxy), naršyklės headeriai
+	// automatiškai nepridedami, todėl pridedame patys.
+	//
+	// Backend'e turi būti sukonfigūruota `CSRF_TRUSTED_ORIGINS` (žr. .copilot/backend.md)
+	// įtraukiant frontendo origin (pvz. https://apetitas.lt).
+	const origin = event.url.origin;
+	if (origin) {
+		headers.set('origin', origin);
+		headers.set('referer', `${origin}/`);
+	}
+}
+
 function getSetCookies(res: Response): string[] {
 	const anyHeaders = res.headers as unknown as { getSetCookie?: () => string[] };
 	const fromMethod = anyHeaders.getSetCookie?.() ?? [];
@@ -60,6 +74,7 @@ export async function backendFetch(
 	const url = apiUrl(path);
 	const headers = new Headers(init?.headers);
 	headers.set('accept', 'application/json');
+	applyCsrfOriginHeaders(event, headers);
 
 	// Forward browser cookies (sessionid/csrftoken) to backend.
 	const cookieHeader = mergeCookieHeader(event.request.headers.get('cookie'), []);
@@ -139,6 +154,7 @@ export async function backendPostJson<T>(
 	headers.set('accept', 'application/json');
 	headers.set('content-type', 'application/json');
 	if (opts?.csrfToken) headers.set('x-csrftoken', opts.csrfToken);
+	applyCsrfOriginHeaders(event, headers);
 
 	const cookieHeader = mergeCookieHeader(
 		event.request.headers.get('cookie'),
