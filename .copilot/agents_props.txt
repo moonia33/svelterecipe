@@ -1,0 +1,32 @@
+sukurk svelte 5 + sveltekit + tailwind receptų svetainę.
+backende veikia strapi.
+Vadovaukis geriausiomis praktikomis ir svelte dokumentacija.
+
+kreipkis i mcp my-mcp-server-86ee9cc7
+Savo nuožiura, galbūt verta naudoti shacdn. pridėta txt dokumentacija: C:\Pip\recipe_svelte\llms.txt
+
+
+
+strapi domenas: recipe.tvparkas.lt
+
+strapi v5. Jei rasi legacy ar likučius iš v4, taisyk, pakeisk, be jokio atsiklausimo
+
+endpontams generuoti įkeliu json modelių schemas:
+api_endponts/
+
+funkcionalumas recepte: neišjungti ekrano, chackbox su teksto perbraukimu
+
+Galbūt funkcija - esu parduotuvėje - labai aiškus pirkinių sąrašas, be blaškymo ir su checkboxais, grupuojant pagal ingradientus, bet ne pagal group.
+
+filtrai ir meniu - logiškai pagal modelius.
+
+paieška - prijungtas unplash search su ai
+
+svetainė lietuvos rinkai, todėl bendravimas ir visi label bei matomas tekstas lietuvių kalba.
+
+
+Vadovautis visa pateikta dokumentacija llms.txt ir api_endponts/*/
+
+
+Labai svarbu - seo first
+

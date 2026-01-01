@@ -1,0 +1,514 @@
+Užklausa:
+
+https://recipe.tvparkas.lt/api/recipes?filters[slug][$eq]=lavasas-keptuveje&populate[coverImage]=true&populate[ingradientsList][populate]=*&populate[step][populate]=*&populate[meal_type]=true&populate[dish_types]=true&populate[diet_tags]=true&populate[cuisine]=true
+
+{
+    "data": [
+        {
+            "id": 15,
+            "documentId": "ppp38hckhccoeqffd2f041hf",
+            "title": "Lavašas keptuvėje",
+            "slug": "lavasas-keptuveje",
+            "summary": "🫓 PAGRINDINĖ KILMĖ\n🇦🇲 Armėnija\n\nLavašas laikomas nacionaline duona\n\n2014 m. UNESCO įtraukė armėnišką lavašą į nematerialaus kultūros paveldo sąrašą\n\nTradiciškai kepamas tonir krosnyje (panašioje į tandyrą)",
+            "servings": 8,
+            "prepTimeMin": 15,
+            "cookTimeMin": 15,
+            "totalTimeMin": 30,
+            "difficulty": "lengvas",
+            "createdAt": "2025-12-27T08:15:46.437Z",
+            "updatedAt": "2025-12-28T12:09:15.299Z",
+            "publishedAt": "2025-12-28T12:09:15.479Z",
+            "note": "🥖 KULINARINĖ KLASIFIKACIJA\n\nJei reikėtų apibrėžti „teisingai“:\n\n✔ Armėniška duona\n\n✔ Kaukazo regiono virtuvė\n\n✔ Artimųjų Rytų plokščios duonos tradicija\n\n🧻 KAIP IŠLAIKYTI MINKŠTĄ\n\nIškepus:\n\ndėk į rankšluostį\n\nlaikyk uždengtus\n\njei nori – labai lengvai patepk vandeniu ar sviestu\n\nPo 10 min:\n\nbus elastingi\n\npuikiai tiks sukti",
+            "description": "🌍 REGIONINĖ DUONA (PLATESNĖ REIKŠMĖ)\n\nLavašo „šeima“ apima visą Pietų Kaukazo ir Artimųjų Rytų regioną:\n\n🇬🇪 Gruzija\nNaudojamas kasdien\nKartais storesnis, minkštesnis\n\n🇦🇿 Azerbaidžanas\nLabai artimas armėniškam\nDažnai naudojamas mėsai, kebabams\n\n🇮🇷 Iranas\nArtimas nan-e lavash\nPlonesnis, kartais traškesnis\n\n🇹🇷 Turkija\nGiminaitis: yufka\nNaudojamas börekams, kebabams",
+            "coverImage": {
+                "id": 2,
+                "documentId": "d8hljcbs727qocxfywzzgigu",
+                "name": "Lavash-Armenian-Flatbread-4-of-5-1024x683.jpg",
+                "alternativeText": null,
+                "caption": null,
+                "width": 1024,
+                "height": 683,
+                "formats": {
+                    "large": {
+                        "ext": ".jpg",
+                        "url": "https://vendure.hel1.your-objectstorage.com/large_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3.jpg",
+                        "hash": "large_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3",
+                        "mime": "image/jpeg",
+                        "name": "large_Lavash-Armenian-Flatbread-4-of-5-1024x683.jpg",
+                        "path": null,
+                        "size": 127.7,
+                        "width": 1000,
+                        "height": 667,
+                        "sizeInBytes": 127696
+                    },
+                    "small": {
+                        "ext": ".jpg",
+                        "url": "https://vendure.hel1.your-objectstorage.com/small_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3.jpg",
+                        "hash": "small_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3",
+                        "mime": "image/jpeg",
+                        "name": "small_Lavash-Armenian-Flatbread-4-of-5-1024x683.jpg",
+                        "path": null,
+                        "size": 42.26,
+                        "width": 500,
+                        "height": 333,
+                        "sizeInBytes": 42264
+                    },
+                    "medium": {
+                        "ext": ".jpg",
+                        "url": "https://vendure.hel1.your-objectstorage.com/medium_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3.jpg",
+                        "hash": "medium_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3",
+                        "mime": "image/jpeg",
+                        "name": "medium_Lavash-Armenian-Flatbread-4-of-5-1024x683.jpg",
+                        "path": null,
+                        "size": 82.22,
+                        "width": 750,
+                        "height": 500,
+                        "sizeInBytes": 82216
+                    },
+                    "thumbnail": {
+                        "ext": ".jpg",
+                        "url": "https://vendure.hel1.your-objectstorage.com/thumbnail_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3.jpg",
+                        "hash": "thumbnail_Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3",
+                        "mime": "image/jpeg",
+                        "name": "thumbnail_Lavash-Armenian-Flatbread-4-of-5-1024x683.jpg",
+                        "path": null,
+                        "size": 12.2,
+                        "width": 234,
+                        "height": 156,
+                        "sizeInBytes": 12197
+                    }
+                },
+                "hash": "Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3",
+                "ext": ".jpg",
+                "mime": "image/jpeg",
+                "size": 134.44,
+                "url": "https://vendure.hel1.your-objectstorage.com/Lavash_Armenian_Flatbread_4_of_5_1024x683_3b415a59a3.jpg",
+                "previewUrl": null,
+                "provider": "aws-s3",
+                "provider_metadata": null,
+                "createdAt": "2025-12-27T09:26:54.900Z",
+                "updatedAt": "2025-12-27T09:26:54.900Z",
+                "publishedAt": "2025-12-27T09:26:54.901Z"
+            },
+            "ingradientsList": [
+                {
+                    "order": 0,
+                    "id": 52,
+                    "group": null,
+                    "optional": null,
+                    "quantity": 300,
+                    "note": "Caputo Pizzeria 00",
+                    "ingredient": {
+                        "id": 4,
+                        "documentId": "s1w9zmjgw3k4jkdatx98pdaj",
+                        "name": "Miltai",
+                        "slug": "miltai",
+                        "createdAt": "2025-12-26T17:34:35.226Z",
+                        "updatedAt": "2025-12-26T17:34:35.226Z",
+                        "publishedAt": "2025-12-26T17:34:35.277Z",
+                        "descriptionShort": "Caputo 00",
+                        "aliases": null,
+                        "densityGPerMl": null,
+                        "isCommon": true
+                    },
+                    "unit": {
+                        "id": 12,
+                        "documentId": "jiyjoqti9pc2ytsu1tdjvbdu",
+                        "name": "gr.",
+                        "slug": "gr",
+                        "createdAt": "2025-12-26T17:22:41.976Z",
+                        "updatedAt": "2025-12-26T17:27:00.960Z",
+                        "publishedAt": "2025-12-26T17:27:00.980Z"
+                    }
+                },
+                {
+                    "order": 1,
+                    "id": 53,
+                    "group": null,
+                    "optional": null,
+                    "quantity": 170,
+                    "note": "Šiltas",
+                    "ingredient": {
+                        "id": 13,
+                        "documentId": "txboaawd0jmncf6at397dchq",
+                        "name": "Vanduo",
+                        "slug": "vanduo",
+                        "createdAt": "2025-12-27T08:06:01.935Z",
+                        "updatedAt": "2025-12-27T08:06:01.935Z",
+                        "publishedAt": "2025-12-27T08:06:01.984Z",
+                        "descriptionShort": null,
+                        "aliases": null,
+                        "densityGPerMl": null,
+                        "isCommon": null
+                    },
+                    "unit": {
+                        "id": 4,
+                        "documentId": "s33plmsyvqjrojqtnuq12ve6",
+                        "name": "ml.",
+                        "slug": null,
+                        "createdAt": "2025-12-26T17:22:53.271Z",
+                        "updatedAt": "2025-12-26T17:22:53.271Z",
+                        "publishedAt": "2025-12-26T17:22:53.291Z"
+                    }
+                },
+                {
+                    "order": null,
+                    "id": 54,
+                    "group": null,
+                    "optional": null,
+                    "quantity": 1,
+                    "note": null,
+                    "ingredient": {
+                        "id": 15,
+                        "documentId": "cysw5ly9ivpnqpxhwkf9ac74",
+                        "name": "Alyvuogių aliejus",
+                        "slug": "alyvuogiu-aliejus",
+                        "createdAt": "2025-12-27T08:07:55.869Z",
+                        "updatedAt": "2025-12-27T08:07:55.869Z",
+                        "publishedAt": "2025-12-27T08:07:55.901Z",
+                        "descriptionShort": null,
+                        "aliases": null,
+                        "densityGPerMl": null,
+                        "isCommon": null
+                    },
+                    "unit": {
+                        "id": 10,
+                        "documentId": "h79apeb88aomihccxzm35t0f",
+                        "name": "šaukštas",
+                        "slug": null,
+                        "createdAt": "2025-12-26T17:23:23.049Z",
+                        "updatedAt": "2025-12-26T17:23:23.049Z",
+                        "publishedAt": "2025-12-26T17:23:23.062Z"
+                    }
+                },
+                {
+                    "order": null,
+                    "id": 55,
+                    "group": null,
+                    "optional": null,
+                    "quantity": 6,
+                    "note": null,
+                    "ingredient": {
+                        "id": 9,
+                        "documentId": "qbojmo76kvssz5ngmkuq1c9r",
+                        "name": "druska",
+                        "slug": "druska",
+                        "createdAt": "2025-12-26T18:47:34.126Z",
+                        "updatedAt": "2025-12-26T18:47:34.126Z",
+                        "publishedAt": "2025-12-26T18:47:34.164Z",
+                        "descriptionShort": null,
+                        "aliases": null,
+                        "densityGPerMl": null,
+                        "isCommon": null
+                    },
+                    "unit": {
+                        "id": 12,
+                        "documentId": "jiyjoqti9pc2ytsu1tdjvbdu",
+                        "name": "gr.",
+                        "slug": "gr",
+                        "createdAt": "2025-12-26T17:22:41.976Z",
+                        "updatedAt": "2025-12-26T17:27:00.960Z",
+                        "publishedAt": "2025-12-26T17:27:00.980Z"
+                    }
+                }
+            ],
+            "step": [
+                {
+                    "id": 27,
+                    "title": "TEŠLOS PARUOŠIMAS",
+                    "note": "Poilsis čia KRITINIS – be jo lavašas trauksis ir plyš.",
+                    "timerMin": 10,
+                    "number": 1,
+                    "description": null,
+                    "images": [
+                        {
+                            "id": 11,
+                            "documentId": "b8lmerd54nl5cnw224ibdoyh",
+                            "name": "Homemade-lavash-bread.jpg",
+                            "alternativeText": null,
+                            "caption": null,
+                            "width": 1200,
+                            "height": 744,
+                            "formats": {
+                                "large": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/large_Homemade_lavash_bread_339a00eb0f.jpg",
+                                    "hash": "large_Homemade_lavash_bread_339a00eb0f",
+                                    "mime": "image/jpeg",
+                                    "name": "large_Homemade-lavash-bread.jpg",
+                                    "path": null,
+                                    "size": 172.22,
+                                    "width": 1000,
+                                    "height": 620,
+                                    "sizeInBytes": 172224
+                                },
+                                "small": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/small_Homemade_lavash_bread_339a00eb0f.jpg",
+                                    "hash": "small_Homemade_lavash_bread_339a00eb0f",
+                                    "mime": "image/jpeg",
+                                    "name": "small_Homemade-lavash-bread.jpg",
+                                    "path": null,
+                                    "size": 51.71,
+                                    "width": 500,
+                                    "height": 310,
+                                    "sizeInBytes": 51711
+                                },
+                                "medium": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/medium_Homemade_lavash_bread_339a00eb0f.jpg",
+                                    "hash": "medium_Homemade_lavash_bread_339a00eb0f",
+                                    "mime": "image/jpeg",
+                                    "name": "medium_Homemade-lavash-bread.jpg",
+                                    "path": null,
+                                    "size": 107.29,
+                                    "width": 750,
+                                    "height": 465,
+                                    "sizeInBytes": 107291
+                                },
+                                "thumbnail": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/thumbnail_Homemade_lavash_bread_339a00eb0f.jpg",
+                                    "hash": "thumbnail_Homemade_lavash_bread_339a00eb0f",
+                                    "mime": "image/jpeg",
+                                    "name": "thumbnail_Homemade-lavash-bread.jpg",
+                                    "path": null,
+                                    "size": 13.62,
+                                    "width": 245,
+                                    "height": 152,
+                                    "sizeInBytes": 13615
+                                }
+                            },
+                            "hash": "Homemade_lavash_bread_339a00eb0f",
+                            "ext": ".jpg",
+                            "mime": "image/jpeg",
+                            "size": 146.06,
+                            "url": "https://vendure.hel1.your-objectstorage.com/Homemade_lavash_bread_339a00eb0f.jpg",
+                            "previewUrl": null,
+                            "provider": "aws-s3",
+                            "provider_metadata": null,
+                            "createdAt": "2025-12-28T12:07:18.729Z",
+                            "updatedAt": "2025-12-28T12:07:18.729Z",
+                            "publishedAt": "2025-12-28T12:07:18.729Z"
+                        },
+                        {
+                            "id": 8,
+                            "documentId": "s6ndybod7ayikz4rb8ar0d8i",
+                            "name": "Lavash_7.jpg",
+                            "alternativeText": null,
+                            "caption": null,
+                            "width": 1200,
+                            "height": 800,
+                            "formats": {
+                                "large": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/large_Lavash_7_f267807922.jpg",
+                                    "hash": "large_Lavash_7_f267807922",
+                                    "mime": "image/jpeg",
+                                    "name": "large_Lavash_7.jpg",
+                                    "path": null,
+                                    "size": 89.17,
+                                    "width": 1000,
+                                    "height": 667,
+                                    "sizeInBytes": 89173
+                                },
+                                "small": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/small_Lavash_7_f267807922.jpg",
+                                    "hash": "small_Lavash_7_f267807922",
+                                    "mime": "image/jpeg",
+                                    "name": "small_Lavash_7.jpg",
+                                    "path": null,
+                                    "size": 29.23,
+                                    "width": 500,
+                                    "height": 333,
+                                    "sizeInBytes": 29229
+                                },
+                                "medium": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/medium_Lavash_7_f267807922.jpg",
+                                    "hash": "medium_Lavash_7_f267807922",
+                                    "mime": "image/jpeg",
+                                    "name": "medium_Lavash_7.jpg",
+                                    "path": null,
+                                    "size": 57.21,
+                                    "width": 750,
+                                    "height": 500,
+                                    "sizeInBytes": 57212
+                                },
+                                "thumbnail": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/thumbnail_Lavash_7_f267807922.jpg",
+                                    "hash": "thumbnail_Lavash_7_f267807922",
+                                    "mime": "image/jpeg",
+                                    "name": "thumbnail_Lavash_7.jpg",
+                                    "path": null,
+                                    "size": 8.28,
+                                    "width": 234,
+                                    "height": 156,
+                                    "sizeInBytes": 8280
+                                }
+                            },
+                            "hash": "Lavash_7_f267807922",
+                            "ext": ".jpg",
+                            "mime": "image/jpeg",
+                            "size": 86.06,
+                            "url": "https://vendure.hel1.your-objectstorage.com/Lavash_7_f267807922.jpg",
+                            "previewUrl": null,
+                            "provider": "aws-s3",
+                            "provider_metadata": null,
+                            "createdAt": "2025-12-27T09:56:33.655Z",
+                            "updatedAt": "2025-12-28T06:38:15.566Z",
+                            "publishedAt": "2025-12-27T09:56:33.657Z"
+                        }
+                    ]
+                },
+                {
+                    "id": 28,
+                    "title": "DALINIMAS IR KOČIOJIMAS",
+                    "note": "👉 Jei traukiasi – palik 5 min ir kočiok vėl.",
+                    "timerMin": null,
+                    "number": null,
+                    "description": null,
+                    "images": null
+                },
+                {
+                    "id": 29,
+                    "title": "KEPIMAS KEPTUVĖJE (SVARBIAUSIA DALIS)",
+                    "note": "👉 Lavašas turi:\n\nvietomis paruduoti\n\nlikti minkštas\n\nNEIŠDŽIŪTI",
+                    "timerMin": 1,
+                    "number": null,
+                    "description": null,
+                    "images": [
+                        {
+                            "id": 9,
+                            "documentId": "flrzau36v47q7dlah0lwdcrt",
+                            "name": "Skillet-Flatbread.jpg",
+                            "alternativeText": null,
+                            "caption": null,
+                            "width": 1200,
+                            "height": 1500,
+                            "formats": {
+                                "large": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/large_Skillet_Flatbread_4ef086e6b3.jpg",
+                                    "hash": "large_Skillet_Flatbread_4ef086e6b3",
+                                    "mime": "image/jpeg",
+                                    "name": "large_Skillet-Flatbread.jpg",
+                                    "path": null,
+                                    "size": 136.56,
+                                    "width": 800,
+                                    "height": 1000,
+                                    "sizeInBytes": 136557
+                                },
+                                "small": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/small_Skillet_Flatbread_4ef086e6b3.jpg",
+                                    "hash": "small_Skillet_Flatbread_4ef086e6b3",
+                                    "mime": "image/jpeg",
+                                    "name": "small_Skillet-Flatbread.jpg",
+                                    "path": null,
+                                    "size": 44.85,
+                                    "width": 400,
+                                    "height": 500,
+                                    "sizeInBytes": 44851
+                                },
+                                "medium": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/medium_Skillet_Flatbread_4ef086e6b3.jpg",
+                                    "hash": "medium_Skillet_Flatbread_4ef086e6b3",
+                                    "mime": "image/jpeg",
+                                    "name": "medium_Skillet-Flatbread.jpg",
+                                    "path": null,
+                                    "size": 87.54,
+                                    "width": 600,
+                                    "height": 750,
+                                    "sizeInBytes": 87539
+                                },
+                                "thumbnail": {
+                                    "ext": ".jpg",
+                                    "url": "https://vendure.hel1.your-objectstorage.com/thumbnail_Skillet_Flatbread_4ef086e6b3.jpg",
+                                    "hash": "thumbnail_Skillet_Flatbread_4ef086e6b3",
+                                    "mime": "image/jpeg",
+                                    "name": "thumbnail_Skillet-Flatbread.jpg",
+                                    "path": null,
+                                    "size": 6.84,
+                                    "width": 125,
+                                    "height": 156,
+                                    "sizeInBytes": 6839
+                                }
+                            },
+                            "hash": "Skillet_Flatbread_4ef086e6b3",
+                            "ext": ".jpg",
+                            "mime": "image/jpeg",
+                            "size": 145.6,
+                            "url": "https://vendure.hel1.your-objectstorage.com/Skillet_Flatbread_4ef086e6b3.jpg",
+                            "previewUrl": null,
+                            "provider": "aws-s3",
+                            "provider_metadata": null,
+                            "createdAt": "2025-12-28T06:50:12.834Z",
+                            "updatedAt": "2025-12-28T06:51:07.224Z",
+                            "publishedAt": "2025-12-28T06:50:12.835Z"
+                        }
+                    ]
+                }
+            ],
+            "meal_type": {
+                "id": 4,
+                "documentId": "bybrwyspwie8gnkf3fpiqk2j",
+                "name": "Pietūs",
+                "slug": "pietus",
+                "createdAt": "2025-12-26T17:28:52.586Z",
+                "updatedAt": "2025-12-26T17:28:52.586Z",
+                "publishedAt": "2025-12-26T17:28:52.600Z"
+            },
+            "dish_types": [
+                {
+                    "id": 7,
+                    "documentId": "v14pudkbs6jm44z21oxfxw2x",
+                    "name": "Duona",
+                    "slug": "duona",
+                    "createdAt": "2025-12-27T08:13:05.864Z",
+                    "updatedAt": "2025-12-27T08:13:05.864Z",
+                    "publishedAt": "2025-12-27T08:13:05.884Z"
+                },
+                {
+                    "id": 9,
+                    "documentId": "bewivjv58ybdvu3cljr9r5vp",
+                    "name": "Lavašai",
+                    "slug": "lavasai",
+                    "createdAt": "2025-12-28T12:03:48.219Z",
+                    "updatedAt": "2025-12-28T12:03:54.155Z",
+                    "publishedAt": "2025-12-28T12:03:54.171Z"
+                },
+                {
+                    "id": 4,
+                    "documentId": "x9u0xjratd6lr8lkyali7mt2",
+                    "name": "Kepiniai",
+                    "slug": "kepiniai",
+                    "createdAt": "2025-12-26T17:30:51.527Z",
+                    "updatedAt": "2025-12-26T17:30:51.527Z",
+                    "publishedAt": "2025-12-26T17:30:51.542Z"
+                }
+            ],
+            "diet_tags": [],
+            "cuisine": {
+                "id": 11,
+                "documentId": "z87iggvzbiy1dzzsra5xvwvw",
+                "name": "Armėnija",
+                "slug": "armenija",
+                "createdAt": "2025-12-28T06:33:22.768Z",
+                "updatedAt": "2025-12-28T06:57:55.360Z",
+                "publishedAt": "2025-12-28T06:57:55.373Z"
+            }
+        }
+    ],
+    "meta": {
+        "pagination": {
+            "page": 1,
+            "pageSize": 25,
+            "pageCount": 1,
+            "total": 1
+        }
+    }
+}

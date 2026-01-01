@@ -1,0 +1,15 @@
+# Root ignores
+
+# Secrets
+web/.env
+cookies.txt
+
+# Node / SvelteKit outputs (root-level, just in case)
+**/node_modules
+**/.svelte-kit
+**/build
+**/.output
+
+# OS
+.DS_Store
+Thumbs.db
