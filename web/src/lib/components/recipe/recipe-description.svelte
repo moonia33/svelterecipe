@@ -28,7 +28,9 @@
 			<div class="prose prose-zinc max-w-none" style={collapsedStyle()}>{@html safeHtml}</div>
 
 			{#if !expanded}
-				<div class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-b from-transparent to-background"></div>
+				<div
+					class="pointer-events-none absolute inset-x-0 bottom-0 h-12 bg-linear-to-b from-transparent to-background"
+				></div>
 			{/if}
 		</div>
 	</section>

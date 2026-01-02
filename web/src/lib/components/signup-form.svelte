@@ -70,15 +70,35 @@
 		>
 			<div class="grid gap-2">
 				<Label for="username">Vardas</Label>
-				<Input id="username" name="username" autocomplete="username" bind:value={username} required />
+				<Input
+					id="username"
+					name="username"
+					autocomplete="username"
+					bind:value={username}
+					required
+				/>
 			</div>
 			<div class="grid gap-2">
 				<Label for="email">El. paštas</Label>
-				<Input id="email" name="email" type="email" autocomplete="email" bind:value={email} required />
+				<Input
+					id="email"
+					name="email"
+					type="email"
+					autocomplete="email"
+					bind:value={email}
+					required
+				/>
 			</div>
 			<div class="grid gap-2">
 				<Label for="password">Slaptažodis</Label>
-				<Input id="password" name="password" type="password" autocomplete="new-password" bind:value={password} required />
+				<Input
+					id="password"
+					name="password"
+					type="password"
+					autocomplete="new-password"
+					bind:value={password}
+					required
+				/>
 				<p class="text-xs text-muted-foreground">Bent 8 simboliai.</p>
 			</div>
 			<div class="grid gap-2">
@@ -102,7 +122,11 @@
 			</Button>
 			<p class="text-center text-sm text-muted-foreground">
 				Jau turite paskyrą?
-				<button type="button" class="underline underline-offset-4" onclick={() => dispatch('switchToLogin')}>
+				<button
+					type="button"
+					class="underline underline-offset-4"
+					onclick={() => dispatch('switchToLogin')}
+				>
 					Prisijungti
 				</button>
 			</p>

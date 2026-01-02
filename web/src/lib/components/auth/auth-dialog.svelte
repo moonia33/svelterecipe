@@ -71,11 +71,16 @@
 				on:forgot={() => (view = 'forgot')}
 			/>
 		{:else if view === 'signup'}
-			<SignupForm on:success={() => void onAuthSuccess()} on:switchToLogin={() => (view = 'login')} />
+			<SignupForm
+				on:success={() => void onAuthSuccess()}
+				on:switchToLogin={() => (view = 'login')}
+			/>
 		{:else}
 			<div class="p-6">
 				<h2 class="text-2xl font-semibold tracking-tight">Slaptažodžio atstatymas</h2>
-				<p class="mt-2 text-sm text-muted-foreground">Įveskite el. paštą ir atsiųsime atstatymo nuorodą.</p>
+				<p class="mt-2 text-sm text-muted-foreground">
+					Įveskite el. paštą ir atsiųsime atstatymo nuorodą.
+				</p>
 
 				<form
 					onsubmit={(e) => {
@@ -97,7 +102,11 @@
 					<Button type="submit" class="w-full" disabled={pending}>
 						{pending ? 'Siunčiama…' : 'Siųsti nuorodą'}
 					</Button>
-					<button type="button" class="text-sm underline underline-offset-4" onclick={() => (view = 'login')}>
+					<button
+						type="button"
+						class="text-sm underline underline-offset-4"
+						onclick={() => (view = 'login')}
+					>
 						Grįžti į prisijungimą
 					</button>
 				</form>

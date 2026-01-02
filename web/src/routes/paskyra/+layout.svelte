@@ -21,14 +21,23 @@
 				<Card.Title>Paskyra</Card.Title>
 				{#if data.user}
 					<Card.Description>
-						Prisijungta{#if usernameOf(data.user)} kaip {usernameOf(data.user)}{/if}.
+						Prisijungta{#if usernameOf(data.user)}
+							kaip {usernameOf(data.user)}{/if}.
 					</Card.Description>
 				{/if}
 			</Card.Header>
 			<Card.Content class="grid gap-1">
-				<a class="rounded-md px-3 py-2 text-sm hover:bg-accent" href={resolve('/paskyra/profilis')}>Profilis</a>
-				<a class="rounded-md px-3 py-2 text-sm hover:bg-accent" href={resolve('/paskyra/mano-apetitas')}>Mano Apetitas</a>
-				<a class="rounded-md px-3 py-2 text-sm hover:bg-accent" href={resolve('/paskyra/mano-komentarai')}>Mano komentarai</a>
+				<a class="rounded-md px-3 py-2 text-sm hover:bg-accent" href={resolve('/paskyra/profilis')}
+					>Profilis</a
+				>
+				<a
+					class="rounded-md px-3 py-2 text-sm hover:bg-accent"
+					href={resolve('/paskyra/mano-apetitas')}>Mano Apetitas</a
+				>
+				<a
+					class="rounded-md px-3 py-2 text-sm hover:bg-accent"
+					href={resolve('/paskyra/mano-komentarai')}>Mano komentarai</a
+				>
 			</Card.Content>
 		</Card.Root>
 	</aside>

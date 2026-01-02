@@ -22,7 +22,9 @@
 <section class="grid gap-6 md:grid-cols-2 md:gap-10">
 	<div class="flex flex-col justify-center gap-4 py-6 md:py-12">
 		<div>
-			<div class="inline-flex bg-zinc-950 px-3 py-1 text-xs font-semibold tracking-widest text-white">
+			<div
+				class="inline-flex bg-zinc-950 px-3 py-1 text-xs font-semibold tracking-widest text-white"
+			>
 				RECEPTAI
 			</div>
 		</div>
@@ -35,7 +37,7 @@
 			<p class="max-w-prose text-base text-zinc-700 sm:text-lg">{summary}</p>
 		{/if}
 
-		<RatingPreview rating={rating} count={ratingCount} />
+		<RatingPreview {rating} count={ratingCount} />
 	</div>
 
 	{#if coverUrl}

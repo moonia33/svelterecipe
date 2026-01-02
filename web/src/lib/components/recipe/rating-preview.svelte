@@ -16,12 +16,16 @@
 <div class="flex flex-wrap items-center gap-x-3 gap-y-2">
 	<div class="text-3xl font-semibold tracking-tight">{rating.toFixed(1)}</div>
 
-	<div class="flex items-center gap-1" aria-label={`Reitingas ${rating.toFixed(1)} iš ${maxStars}`}> 
+	<div class="flex items-center gap-1" aria-label={`Reitingas ${rating.toFixed(1)} iš ${maxStars}`}>
 		{#each Array.from({ length: maxStars }, (_, i) => i) as i (i)}
 			{@const full = i < filledStars(rating)}
 			{@const partial = !full && i === filledStars(rating) && hasPartial(rating)}
 			<StarIcon
-				class={full ? 'h-5 w-5 text-zinc-950' : partial ? 'h-5 w-5 text-zinc-950/60' : 'h-5 w-5 text-zinc-950/25'}
+				class={full
+					? 'h-5 w-5 text-zinc-950'
+					: partial
+						? 'h-5 w-5 text-zinc-950/60'
+						: 'h-5 w-5 text-zinc-950/25'}
 				fill={full || partial ? 'currentColor' : 'none'}
 				stroke="currentColor"
 			/>

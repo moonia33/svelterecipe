@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import { onDestroy, onMount } from 'svelte';
 
 	import { Button } from '$lib/components/ui/button';
@@ -96,7 +97,6 @@
 	});
 
 	onMount(() => {
-
 		visibilityHandler = () => {
 			if (document.visibilityState === 'visible' && keepAwake) {
 				void requestWakeLock();
@@ -145,7 +145,10 @@
 				<h1 class="text-2xl font-semibold tracking-tight">Esu parduotuvėje</h1>
 				<p class="mt-1 text-sm text-zinc-600">Minimalus režimas: aiškus sąrašas, be blaškymo.</p>
 			</div>
-			<a class="text-sm text-zinc-600 underline underline-offset-4 hover:text-zinc-900" href="/receptai">Atgal į receptus</a>
+			<a
+				class="text-sm text-zinc-600 underline underline-offset-4 hover:text-zinc-900"
+				href={resolve('/receptai')}>Atgal į receptus</a
+			>
 		</div>
 
 		<form method="GET" class="grid gap-2 rounded-lg border p-4">
@@ -165,7 +168,9 @@
 				<Button type="submit" class="sm:w-auto">Rodyti sąrašą</Button>
 			</div>
 			{#if page.selectedTitle}
-				<div class="mt-2 text-sm text-zinc-600">Pasirinktas receptas: <span class="font-medium text-zinc-900">{page.selectedTitle}</span></div>
+				<div class="mt-2 text-sm text-zinc-600">
+					Pasirinktas receptas: <span class="font-medium text-zinc-900">{page.selectedTitle}</span>
+				</div>
 			{/if}
 			<div class="mt-2 flex items-center justify-between gap-3">
 				<div class="flex items-center gap-3">
@@ -181,43 +186,45 @@
 	</header>
 
 	{#if !page.selectedSlug}
-		<div class="rounded-lg border p-4 text-sm text-zinc-600">Pasirinkite receptą, kad sugeneruočiau pirkinių sąrašą.</div>
+		<div class="rounded-lg border p-4 text-sm text-zinc-600">
+			Pasirinkite receptą, kad sugeneruočiau pirkinių sąrašą.
+		</div>
+	{:else if page.shopping.length === 0}
+		<div class="rounded-lg border p-4 text-sm text-zinc-600">
+			Šiam receptui ingredientų sąrašas tuščias.
+		</div>
 	{:else}
-		{#if page.shopping.length === 0}
-			<div class="rounded-lg border p-4 text-sm text-zinc-600">Šiam receptui ingredientų sąrašas tuščias.</div>
-		{:else}
-			<section class="grid gap-3">
-				<h2 class="text-lg font-semibold tracking-tight">Pirkinių sąrašas</h2>
+		<section class="grid gap-3">
+			<h2 class="text-lg font-semibold tracking-tight">Pirkinių sąrašas</h2>
 
-				<div class="grid gap-2">
-					{#each page.shopping as item (item.key)}
-						<div class="flex items-start gap-3 rounded-md border p-3">
-							<Checkbox
-								checked={isChecked(item.key)}
-								onclick={() => setChecked(item.key, !isChecked(item.key))}
-								class="mt-0.5"
-							/>
-							<div class={isChecked(item.key) ? 'text-zinc-500 line-through' : ''}>
-								<div class="font-medium">{item.ingredientName}</div>
-								<div class="mt-0.5 text-sm text-zinc-600">
-									{#if item.totalQuantity !== null}
-										{formatQuantity(item.totalQuantity)}
-									{/if}
-									{#if item.unitName}
-										{#if item.totalQuantity !== null}&nbsp;{/if}{item.unitName}
-									{/if}
-									{#if item.note}
-										<span class="text-zinc-500"> – {item.note}</span>
-									{/if}
-								</div>
-								{#if item.optional}
-									<div class="mt-1 text-xs text-zinc-500">Nebūtina</div>
+			<div class="grid gap-2">
+				{#each page.shopping as item (item.key)}
+					<div class="flex items-start gap-3 rounded-md border p-3">
+						<Checkbox
+							checked={isChecked(item.key)}
+							onclick={() => setChecked(item.key, !isChecked(item.key))}
+							class="mt-0.5"
+						/>
+						<div class={isChecked(item.key) ? 'text-zinc-500 line-through' : ''}>
+							<div class="font-medium">{item.ingredientName}</div>
+							<div class="mt-0.5 text-sm text-zinc-600">
+								{#if item.totalQuantity !== null}
+									{formatQuantity(item.totalQuantity)}
+								{/if}
+								{#if item.unitName}
+									{#if item.totalQuantity !== null}&nbsp;{/if}{item.unitName}
+								{/if}
+								{#if item.note}
+									<span class="text-zinc-500"> – {item.note}</span>
 								{/if}
 							</div>
+							{#if item.optional}
+								<div class="mt-1 text-xs text-zinc-500">Nebūtina</div>
+							{/if}
 						</div>
-					{/each}
-				</div>
-			</section>
-		{/if}
+					</div>
+				{/each}
+			</div>
+		</section>
 	{/if}
 </div>

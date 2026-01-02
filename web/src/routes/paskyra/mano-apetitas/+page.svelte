@@ -1,12 +1,14 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { resolveRoute } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
 
-	function pickImageUrl(images: PageData['items'][number]['images'] | null | undefined): string | undefined {
+	function pickImageUrl(
+		images: PageData['items'][number]['images'] | null | undefined
+	): string | undefined {
 		const v = images ?? null;
 		const candidates: Array<string | null | undefined> = [
 			v?.large?.webp,
@@ -45,7 +47,10 @@
 {:else}
 	<div class="mt-6 grid gap-4 md:grid-cols-2">
 		{#each data.items as item (item.id)}
-			<a class="block" href={resolveRoute('/receptai/[slug]', { slug: item.slug })}>
+			<a
+				class="block"
+				href={resolve(...([`/receptai/${item.slug}`] as unknown as Parameters<typeof resolve>))}
+			>
 				<Card.Root class="h-full">
 					<div class="flex gap-4 px-6">
 						{#if pickImageUrl(item.images)}

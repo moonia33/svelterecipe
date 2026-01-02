@@ -57,9 +57,7 @@ function mergeCookieHeader(
 	const existing = (existingCookieHeader ?? '').trim();
 	// extraCookies gali būti tiek "name=value", tiek pilnos "Set-Cookie" eilutės.
 	// Cookie headeriui tinka tik "name=value" poros.
-	const extra = extraCookies
-		.map((c) => c.split(';', 1)[0]?.trim() ?? '')
-		.filter(Boolean);
+	const extra = extraCookies.map((c) => c.split(';', 1)[0]?.trim() ?? '').filter(Boolean);
 	if (!existing && extra.length === 0) return undefined;
 	if (!existing) return extra.join('; ');
 	if (extra.length === 0) return existing;

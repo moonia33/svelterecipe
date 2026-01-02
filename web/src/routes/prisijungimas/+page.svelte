@@ -2,18 +2,23 @@
 	import LoginForm from '$lib/components/login-form.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 
 	const redirectTo = $derived(page.url.searchParams.get('redirectTo') ?? '/receptai');
 
 	async function onSuccess() {
 		await invalidateAll();
-		await goto(redirectTo);
+		const target = new URL(redirectTo, 'http://local');
+		const href = `${target.pathname}${target.search}${target.hash}`;
+		await goto(resolve(...([href] as unknown as Parameters<typeof resolve>)));
 	}
 
 	async function goToSignup() {
-		const q = new URLSearchParams();
+		const q = new SvelteURLSearchParams();
 		if (redirectTo && redirectTo !== '/receptai') q.set('redirectTo', redirectTo);
-		await goto(`/registracija${q.size ? `?${q.toString()}` : ''}`);
+		const href = `/registracija${q.size ? `?${q.toString()}` : ''}`;
+		await goto(resolve(...([href] as unknown as Parameters<typeof resolve>)));
 	}
 </script>
 

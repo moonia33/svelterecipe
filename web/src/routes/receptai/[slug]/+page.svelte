@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import { onDestroy, onMount } from 'svelte';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Button } from '$lib/components/ui/button';
-	import { Badge } from "$lib/components/ui/badge/index.js";
-	import AlarmClockCheck from "@lucide/svelte/icons/alarm-clock-check";
-	import { badgeVariants } from "$lib/components/ui/badge/index.js";
-	import { Separator } from "$lib/components/ui/separator/index.js";
-	import * as Card from "$lib/components/ui/card/index.js";
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import AlarmClockCheck from '@lucide/svelte/icons/alarm-clock-check';
+	import { badgeVariants } from '$lib/components/ui/badge/index.js';
+	import { Separator } from '$lib/components/ui/separator/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
 	import RecipeHero from '$lib/components/recipe/recipe-hero.svelte';
 	import CollapsibleDescription from '$lib/components/recipe/collapsible-description.svelte';
 	import { renderBlocks, renderMarkdown, sanitizeHtmlString } from '$lib/markdown';
@@ -59,15 +60,17 @@
 		commentText = '';
 	});
 
-	function facetHref(kind: string, slug: string) {
-		return `/paieska?${encodeURIComponent(kind)}=${encodeURIComponent(slug)}`;
+	function facetQuery(kind: string, slug: string) {
+		return `${encodeURIComponent(kind)}=${encodeURIComponent(slug)}`;
 	}
 
 	function formatScaledQuantity(value: unknown, multiplier: number): string {
 		if (value === null || value === undefined) return '';
 		if (typeof value === 'number' && Number.isFinite(value)) {
 			const scaled = value * multiplier;
-			return String(Number(scaled.toFixed(2))).replace(/\.0+$/, '').replace(/(\.[0-9]*?)0+$/, '$1');
+			return String(Number(scaled.toFixed(2)))
+				.replace(/\.0+$/, '')
+				.replace(/(\.[0-9]*?)0+$/, '$1');
 		}
 		if (typeof value === 'string') {
 			const raw = value.trim();
@@ -78,14 +81,18 @@
 				const [a, b] = raw.split('/').map((x) => Number(x.trim()));
 				if (Number.isFinite(a) && Number.isFinite(b) && b !== 0) {
 					const scaled = (a / b) * multiplier;
-					return String(Number(scaled.toFixed(2))).replace(/\.0+$/, '').replace(/(\.[0-9]*?)0+$/, '$1');
+					return String(Number(scaled.toFixed(2)))
+						.replace(/\.0+$/, '')
+						.replace(/(\.[0-9]*?)0+$/, '$1');
 				}
 			}
 
 			const n = Number(raw.replace(',', '.'));
 			if (Number.isFinite(n)) {
 				const scaled = n * multiplier;
-				return String(Number(scaled.toFixed(2))).replace(/\.0+$/, '').replace(/(\.[0-9]*?)0+$/, '$1');
+				return String(Number(scaled.toFixed(2)))
+					.replace(/\.0+$/, '')
+					.replace(/(\.[0-9]*?)0+$/, '$1');
 			}
 
 			return raw;
@@ -147,7 +154,8 @@
 		const v = s.description;
 		if (!v) return '';
 		if (typeof v === 'string') return renderMarkdown(v);
-		if (Array.isArray(v)) return renderBlocks(v as Array<{ type: string; children?: Array<{ text?: string }> }>);
+		if (Array.isArray(v))
+			return renderBlocks(v as Array<{ type: string; children?: Array<{ text?: string }> }>);
 		return '';
 	}
 
@@ -307,9 +315,13 @@
 			const obj = asObject(payload);
 			const avg =
 				asNumber(obj?.rating_average ?? obj?.ratingAverage) ?? recipe.ratingAverage ?? null;
-			const cnt =
-				asNumber(obj?.rating_count ?? obj?.ratingCount) ?? recipe.ratingCount ?? null;
-			recipeOverrides = { ...recipeOverrides, ratingAverage: avg, ratingCount: cnt, userRating: ratingValue };
+			const cnt = asNumber(obj?.rating_count ?? obj?.ratingCount) ?? recipe.ratingCount ?? null;
+			recipeOverrides = {
+				...recipeOverrides,
+				ratingAverage: avg,
+				ratingCount: cnt,
+				userRating: ratingValue
+			};
 		} catch (e) {
 			actionError = e instanceof Error ? e.message : 'Nepavyko įvertinti';
 		} finally {
@@ -362,9 +374,9 @@
 		if (!('wakeLock' in navigator)) return;
 
 		try {
-			wakeLock = await (navigator as unknown as { wakeLock: { request: (t: 'screen') => Promise<unknown> } }).wakeLock.request(
-				'screen'
-			);
+			wakeLock = await (
+				navigator as unknown as { wakeLock: { request: (t: 'screen') => Promise<unknown> } }
+			).wakeLock.request('screen');
 		} catch {
 			keepAwake = false;
 			wakeLock = null;
@@ -418,7 +430,11 @@
 	</div>
 	<div class="grid gap-6">
 		<div class="flex flex-wrap items-center gap-3">
-			<Button variant="outline" size="sm" onclick={() => document.getElementById('receptas')?.scrollIntoView()}>
+			<Button
+				variant="outline"
+				size="sm"
+				onclick={() => document.getElementById('receptas')?.scrollIntoView()}
+			>
 				Pereiti prie recepto
 			</Button>
 			<Button
@@ -481,99 +497,136 @@
 				<div class="text-xs font-semibold tracking-wide text-muted-foreground">FACETAI</div>
 				<div class="flex flex-col items-center gap-2">
 					<div class="flex w-full flex-wrap gap-2">
-					{#if recipe.cuisines?.length}
-						{#each recipe.cuisines as c (c.id)}
-							{#if c.slug || c.name}
-								<a href={facetHref('q', c.slug ?? c.name ?? '')} class={badgeVariants({ variant: 'destructive' })}>
-									{c.name ?? c.slug}
-								</a>
-							{/if}
-						{/each}
-					{:else if recipe.cuisine?.slug || recipe.cuisine?.name}
-						<a
-							href={facetHref('q', recipe.cuisine?.slug ?? recipe.cuisine?.name ?? '')}
-							class={badgeVariants({ variant: 'destructive' })}
-						>
-							{recipe.cuisine?.name ?? recipe.cuisine?.slug}
-						</a>
-					{/if}
+						{#if recipe.cuisines?.length}
+							{#each recipe.cuisines as c (c.id)}
+								{#if c.slug || c.name}
+									<a
+										href={resolve(
+											...([
+												`/paieska?${facetQuery('q', c.slug ?? c.name ?? '')}`
+											] as unknown as Parameters<typeof resolve>)
+										)}
+										class={badgeVariants({ variant: 'destructive' })}
+									>
+										{c.name ?? c.slug}
+									</a>
+								{/if}
+							{/each}
+						{:else if recipe.cuisine?.slug || recipe.cuisine?.name}
+							<a
+								href={resolve(
+									...([
+										`/paieska?${facetQuery('q', recipe.cuisine?.slug ?? recipe.cuisine?.name ?? '')}`
+									] as unknown as Parameters<typeof resolve>)
+								)}
+								class={badgeVariants({ variant: 'destructive' })}
+							>
+								{recipe.cuisine?.name ?? recipe.cuisine?.slug}
+							</a>
+						{/if}
 
-					{#if recipe.mealTypes?.length}
-						{#each recipe.mealTypes as mt (mt.id)}
-							{#if mt.slug || mt.name}
-								<a
-									href={facetHref('q', mt.slug ?? mt.name ?? '')}
-									class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
-								>
-									Valgis: {mt.name ?? mt.slug}
-								</a>
-							{/if}
-						{/each}
-					{:else if recipe.meal_type?.slug || recipe.meal_type?.name}
-						<a
-							href={facetHref('q', recipe.meal_type?.slug ?? recipe.meal_type?.name ?? '')}
-							class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
-						>
-							Valgis: {recipe.meal_type?.name ?? recipe.meal_type?.slug}
-						</a>
-					{/if}
+						{#if recipe.mealTypes?.length}
+							{#each recipe.mealTypes as mt (mt.id)}
+								{#if mt.slug || mt.name}
+									<a
+										href={resolve(
+											...([
+												`/paieska?${facetQuery('q', mt.slug ?? mt.name ?? '')}`
+											] as unknown as Parameters<typeof resolve>)
+										)}
+										class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
+									>
+										Valgis: {mt.name ?? mt.slug}
+									</a>
+								{/if}
+							{/each}
+						{:else if recipe.meal_type?.slug || recipe.meal_type?.name}
+							<a
+								href={resolve(
+									...([
+										`/paieska?${facetQuery('q', recipe.meal_type?.slug ?? recipe.meal_type?.name ?? '')}`
+									] as unknown as Parameters<typeof resolve>)
+								)}
+								class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
+							>
+								Valgis: {recipe.meal_type?.name ?? recipe.meal_type?.slug}
+							</a>
+						{/if}
 
-					{#if recipe.categories?.length}
-						{#each recipe.categories as cat (cat.id)}
-							{#if cat.slug || cat.name}
-								<a
-									href={facetHref('q', cat.slug ?? cat.name ?? '')}
-									class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
-								>
-									Kategorija: {cat.name ?? cat.slug}
-								</a>
-							{/if}
-						{/each}
-					{/if}
+						{#if recipe.categories?.length}
+							{#each recipe.categories as cat (cat.id)}
+								{#if cat.slug || cat.name}
+									<a
+										href={resolve(
+											...([
+												`/paieska?${facetQuery('q', cat.slug ?? cat.name ?? '')}`
+											] as unknown as Parameters<typeof resolve>)
+										)}
+										class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
+									>
+										Kategorija: {cat.name ?? cat.slug}
+									</a>
+								{/if}
+							{/each}
+						{/if}
 
-					{#if recipe.cookingMethods?.length}
-						{#each recipe.cookingMethods as cm (cm.id)}
-							{#if cm.slug || cm.name}
-								<a
-									href={facetHref('q', cm.slug ?? cm.name ?? '')}
-									class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
-								>
-									Metodas: {cm.name ?? cm.slug}
-								</a>
-							{/if}
-						{/each}
-					{/if}
+						{#if recipe.cookingMethods?.length}
+							{#each recipe.cookingMethods as cm (cm.id)}
+								{#if cm.slug || cm.name}
+									<a
+										href={resolve(
+											...([
+												`/paieska?${facetQuery('q', cm.slug ?? cm.name ?? '')}`
+											] as unknown as Parameters<typeof resolve>)
+										)}
+										class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
+									>
+										Metodas: {cm.name ?? cm.slug}
+									</a>
+								{/if}
+							{/each}
+						{/if}
 
-					{#if recipe.tags?.length}
-						{#each recipe.tags as t (t.id)}
-							{#if t.slug || t.name}
-								<a
-									href={facetHref('q', t.slug ?? t.name ?? '')}
-									class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
-								>
-									{t.name ?? t.slug}
-								</a>
-							{/if}
-						{/each}
-					{:else if recipe.tag?.length}
-						{#each recipe.tag as t (t.id)}
-							{#if t.slug || t.name}
-								<a
-									href={facetHref('q', t.slug ?? t.name ?? '')}
-									class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
-								>
-									{t.name ?? t.slug}
-								</a>
-							{/if}
-						{/each}
-					{/if}
+						{#if recipe.tags?.length}
+							{#each recipe.tags as t (t.id)}
+								{#if t.slug || t.name}
+									<a
+										href={resolve(
+											...([
+												`/paieska?${facetQuery('q', t.slug ?? t.name ?? '')}`
+											] as unknown as Parameters<typeof resolve>)
+										)}
+										class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
+									>
+										{t.name ?? t.slug}
+									</a>
+								{/if}
+							{/each}
+						{:else if recipe.tag?.length}
+							{#each recipe.tag as t (t.id)}
+								{#if t.slug || t.name}
+									<a
+										href={resolve(
+											...([
+												`/paieska?${facetQuery('q', t.slug ?? t.name ?? '')}`
+											] as unknown as Parameters<typeof resolve>)
+										)}
+										class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium hover:bg-muted/80"
+									>
+										{t.name ?? t.slug}
+									</a>
+								{/if}
+							{/each}
+						{/if}
 
-					{#if recipe.difficulty}
-						<span class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium">
-							Sudėtingumas: {recipe.difficulty}
-						</span>
-					{/if}
-				</div>
+						{#if recipe.difficulty}
+							<span
+								class="inline-flex items-center rounded-full border bg-muted px-3 py-1 text-xs font-medium"
+							>
+								Sudėtingumas: {recipe.difficulty}
+							</span>
+						{/if}
+					</div>
 				</div>
 			</div>
 
@@ -609,11 +662,9 @@
 		</div>
 	</section>
 
-
-
-	<section id="receptas" class="grid gap-6s">
+	<section id="receptas" class="gap-6s grid">
 		<div class="grid gap-6 md:grid-cols-12">
-			<section class="md:col-span-4 pr-7">
+			<section class="pr-7 md:col-span-4">
 				<div class="flex items-end justify-between gap-4 border-b pb-2">
 					<h2 class="mt-8 scroll-m-20 text-2xl font-semibold tracking-tight">Ingredientai</h2>
 					<div class="flex items-center gap-2">
@@ -646,7 +697,9 @@
 						{#each ingredientGroups as g (g.key)}
 							<div class="grid gap-3">
 								{#if g.name}
-									<h3 class="text-sm font-semibold tracking-wide text-muted-foreground">{g.name}</h3>
+									<h3 class="text-sm font-semibold tracking-wide text-muted-foreground">
+										{g.name}
+									</h3>
 								{/if}
 								<ul class="grid gap-3">
 									{#each g.items as item, i (i)}
@@ -654,12 +707,14 @@
 										{@const qty = ingredientQtyText(item)}
 										<li class="flex items-start justify-between gap-4">
 											<div class="min-w-0">
-												<div class="font-medium leading-snug">{ingredientTitle(item)}</div>
+												<div class="leading-snug font-medium">{ingredientTitle(item)}</div>
 												{#if note}
 													<small class="text-muted-foreground">{note}</small>
 												{/if}
 											</div>
-											<div class="shrink-0 text-right text-sm font-medium tabular-nums text-foreground">
+											<div
+												class="shrink-0 text-right text-sm font-medium text-foreground tabular-nums"
+											>
 												{qty}
 											</div>
 										</li>
@@ -692,12 +747,12 @@
 											- {step.title}
 										{/if}
 									</h3>
-								
+
 									{#if asNumber(timerMin)}
-									<Badge variant="secondary">
-										<AlarmClockCheck class="h-4 w-4" />
-										{asNumber(timerMin)} min
-									  </Badge>
+										<Badge variant="secondary">
+											<AlarmClockCheck class="h-4 w-4" />
+											{asNumber(timerMin)} min
+										</Badge>
 										<!-- <div class="text-xs text-muted-foreground">{step.timerMin} min</div> -->
 									{/if}
 								</div>
@@ -708,8 +763,7 @@
 								{/if}
 
 								{#if step.note}
-								<blockquote class="my-6 border-s-2 ps-6 italic">{step.note}</blockquote>
-
+									<blockquote class="my-6 border-s-2 ps-6 italic">{step.note}</blockquote>
 								{/if}
 
 								{#if images.length}
@@ -729,7 +783,6 @@
 							</div>
 							<Separator />
 						{/each}
-						
 					{:else}
 						<p class="text-sm text-muted-foreground">Gaminimo eiga dar neparuošta.</p>
 					{/if}
@@ -747,7 +800,7 @@
 			<Card.Content>
 				<form class="grid gap-3" onsubmit={(e) => (e.preventDefault(), void submitComment())}>
 					<textarea
-						class="border-input bg-background ring-offset-background placeholder:text-muted-foreground min-h-24 w-full rounded-md border px-3 py-2 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+						class="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs ring-offset-background outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
 						placeholder="Parašyk komentarą..."
 						bind:value={commentText}
 					></textarea>
@@ -773,7 +826,7 @@
 							{/if}
 						</Card.Header>
 						<Card.Content>
-							<p class="whitespace-pre-wrap text-sm">{commentContent(c)}</p>
+							<p class="text-sm whitespace-pre-wrap">{commentContent(c)}</p>
 						</Card.Content>
 					</Card.Root>
 				{/each}

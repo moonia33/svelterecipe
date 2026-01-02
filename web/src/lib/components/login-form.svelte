@@ -64,7 +64,13 @@
 		>
 			<div class="grid gap-2">
 				<Label for="identifier">El. paštas arba vartotojo vardas</Label>
-				<Input id="identifier" name="identifier" autocomplete="username" bind:value={identifier} required />
+				<Input
+					id="identifier"
+					name="identifier"
+					autocomplete="username"
+					bind:value={identifier}
+					required
+				/>
 			</div>
 			<div class="grid gap-2">
 				<div class="flex items-center justify-between gap-2">
@@ -77,7 +83,14 @@
 						Pamiršau slaptažodį
 					</button>
 				</div>
-				<Input id="password" name="password" type="password" autocomplete="current-password" bind:value={password} required />
+				<Input
+					id="password"
+					name="password"
+					type="password"
+					autocomplete="current-password"
+					bind:value={password}
+					required
+				/>
 			</div>
 
 			{#if errorMsg}
@@ -89,7 +102,11 @@
 			</Button>
 			<p class="text-center text-sm text-muted-foreground">
 				Neturite paskyros?
-				<button type="button" class="underline underline-offset-4" onclick={() => dispatch('switchToSignup')}>
+				<button
+					type="button"
+					class="underline underline-offset-4"
+					onclick={() => dispatch('switchToSignup')}
+				>
 					Sukurti paskyrą
 				</button>
 			</p>

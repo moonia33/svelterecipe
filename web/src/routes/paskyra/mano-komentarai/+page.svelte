@@ -8,6 +8,7 @@
 		<Card.Description>Ši dalis dar ruošiama.</Card.Description>
 	</Card.Header>
 	<Card.Content class="text-sm text-muted-foreground">
-		Šiuo metu backendo dokumentacijoje nėra endpointo, kuris grąžintų prisijungusio naudotojo komentarų sąrašą.
+		Šiuo metu backendo dokumentacijoje nėra endpointo, kuris grąžintų prisijungusio naudotojo
+		komentarų sąrašą.
 	</Card.Content>
 </Card.Root>

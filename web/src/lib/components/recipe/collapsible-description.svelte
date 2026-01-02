@@ -36,16 +36,15 @@
 		</div>
 
 		<div class="relative">
-			<div
-				class="max-w-none"
-				style={!expanded ? clampedStyle() : undefined}
-			>
+			<div class="max-w-none" style={!expanded ? clampedStyle() : undefined}>
 				<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 				{@html safeHtml}
 			</div>
 
 			{#if !expanded}
-				<div class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-background to-transparent"></div>
+				<div
+					class="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-linear-to-t from-background to-transparent"
+				></div>
 			{/if}
 		</div>
 	</section>

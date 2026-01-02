@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Badge } from '$lib/components/ui/badge';
 	import Clock from '@lucide/svelte/icons/clock';
+	import { resolve } from '$app/paths';
 	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
@@ -19,11 +20,17 @@
 			<div class="mt-6 grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 lg:grid-cols-6">
 				{#each data.recipes as recipe (recipe.id)}
 					<div class="group relative">
-						<a href={`/receptai/${recipe.slug}`} class="absolute inset-0" aria-label={recipe.title}></a>
+						<a
+							href={resolve(
+								...([`/receptai/${recipe.slug}`] as unknown as Parameters<typeof resolve>)
+							)}
+							class="absolute inset-0"
+							aria-label={recipe.title}
+						></a>
 
 						{#if recipe.coverImage?.url}
 							{#if recipe.totalTimeMin && recipe.totalTimeMin <= 30}
-								<Badge variant="destructive" class="absolute right-1 top-1 z-10">
+								<Badge variant="destructive" class="absolute top-1 right-1 z-10">
 									<Clock class="size-3" />
 									{recipe.totalTimeMin} min
 								</Badge>
@@ -35,15 +42,18 @@
 								loading="lazy"
 							/>
 						{:else}
-							<div class="w-full rounded-lg bg-card border max-sm:h-56 sm:aspect-[2/1] lg:aspect-square"></div>
+							<div
+								class="w-full rounded-lg border bg-card max-sm:h-56 sm:aspect-[2/1] lg:aspect-square"
+							></div>
 						{/if}
 
 						<h2 class="mt-4 text-sm text-muted-foreground">
-							{recipe.meal_type?.name ?? (recipe.difficulty ? `Sudėtingumas: ${recipe.difficulty}` : 'Receptas')}
+							{recipe.meal_type?.name ??
+								(recipe.difficulty ? `Sudėtingumas: ${recipe.difficulty}` : 'Receptas')}
 						</h2>
 						<p class="text-base font-semibold text-foreground">{recipe.title}</p>
 						{#if recipe.summary}
-							<p class="mt-1 text-sm text-muted-foreground line-clamp-2">{recipe.summary}</p>
+							<p class="mt-1 line-clamp-2 text-sm text-muted-foreground">{recipe.summary}</p>
 						{/if}
 					</div>
 				{/each}

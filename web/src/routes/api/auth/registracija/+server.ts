@@ -41,5 +41,8 @@ export const POST: RequestHandler = async (event) => {
 	}
 
 	const isAuthed = (data as Record<string, unknown>)?.is_authenticated === true;
-	return json({ user: (data as Record<string, unknown>)?.user ?? null, loggedIn: isAuthed }, { status: 200, headers });
+	return json(
+		{ user: (data as Record<string, unknown>)?.user ?? null, loggedIn: isAuthed },
+		{ status: 200, headers }
+	);
 };
