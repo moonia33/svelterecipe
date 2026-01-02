@@ -17,7 +17,7 @@
 	async function goToLogin() {
 		const q = new SvelteURLSearchParams();
 		if (redirectTo && redirectTo !== '/receptai') q.set('redirectTo', redirectTo);
-		const href = `/prisijungimas${q.size ? `?${q.toString()}` : ''}`;
+		const href = `/auth/prisijungimas${q.size ? `?${q.toString()}` : ''}`;
 		await goto(resolve(...([href] as unknown as Parameters<typeof resolve>)));
 	}
 </script>

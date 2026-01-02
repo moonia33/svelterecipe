@@ -112,7 +112,7 @@ export async function ensureCsrf(
 	const existing = event.cookies.get('csrftoken');
 	if (existing) return { csrfToken: existing, setCookies: [] };
 
-	const res = await fetch(apiUrl('/auth/session'), {
+	const res = await backendFetch(event, '/auth/session', {
 		method: 'GET',
 		headers: { accept: 'application/json' }
 	});

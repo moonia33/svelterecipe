@@ -697,7 +697,7 @@
 						{#each ingredientGroups as g (g.key)}
 							<div class="grid gap-3">
 								{#if g.name}
-									<h3 class="text-sm font-semibold tracking-wide text-muted-foreground">
+									<h3 class="border-b pb-2 text-lg font-bold tracking-wide">
 										{g.name}
 									</h3>
 								{/if}

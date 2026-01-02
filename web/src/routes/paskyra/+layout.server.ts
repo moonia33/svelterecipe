@@ -13,7 +13,7 @@ type SessionSchema = {
 export const load: LayoutServerLoad = async (event) => {
 	const session = await backendJson<SessionSchema>(event, '/auth/session', { method: 'GET' });
 	if (!session?.is_authenticated) {
-		redirect(303, '/prisijungimas');
+		throw redirect(303, '/auth/prisijungimas');
 	}
 
 	return {

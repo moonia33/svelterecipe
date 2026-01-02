@@ -1,6 +1,7 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 import { ensureCsrf, backendPostJson } from '$lib/server/backend-api';
+import { verifyTurnstile } from '$lib/server/turnstile';
 
 type SessionSchema = {
 	is_authenticated: boolean;
@@ -12,15 +13,22 @@ export const POST: RequestHandler = async (event) => {
 	const body = (await event.request.json().catch(() => null)) as {
 		identifier?: string;
 		password?: string;
+		turnstileToken?: string;
 	} | null;
 
 	const identifier = body?.identifier?.trim();
 	const password = body?.password ?? '';
+	const turnstileToken = body?.turnstileToken ?? '';
 	if (!identifier || !password) {
 		return json(
 			{ message: 'Trūksta prisijungimo duomenų.', loggedIn: false, user: null },
 			{ status: 400 }
 		);
+	}
+
+	const turnstile = await verifyTurnstile(event, turnstileToken);
+	if (!turnstile.ok) {
+		return json({ message: turnstile.message, loggedIn: false, user: null }, { status: 403 });
 	}
 
 	const { csrfToken, setCookies: csrfCookies } = await ensureCsrf(event);

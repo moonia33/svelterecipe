@@ -1,11 +1,21 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
 
 import { ensureCsrf, backendPostJson } from '$lib/server/backend-api';
+import { verifyTurnstile } from '$lib/server/turnstile';
 
 export const POST: RequestHandler = async (event) => {
-	const body = (await event.request.json().catch(() => null)) as { email?: string } | null;
+	const body = (await event.request.json().catch(() => null)) as {
+		email?: string;
+		turnstileToken?: string;
+	} | null;
 	const email = body?.email?.trim();
+	const turnstileToken = body?.turnstileToken ?? '';
 	if (!email) return json({ detail: 'Trūksta el. pašto.' }, { status: 400 });
+
+	const turnstile = await verifyTurnstile(event, turnstileToken);
+	if (!turnstile.ok) {
+		return json({ detail: turnstile.message }, { status: 403 });
+	}
 
 	const { csrfToken, setCookies: csrfCookies } = await ensureCsrf(event);
 	const { res, data, setCookies } = await backendPostJson<Record<string, unknown>>(

@@ -4,6 +4,7 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import Turnstile from '$lib/components/auth/turnstile.svelte';
 
 	const dispatch = createEventDispatcher<{
 		success: void;
@@ -13,6 +14,8 @@
 
 	let identifier = $state('');
 	let password = $state('');
+	let turnstileToken = $state('');
+	let turnstileError = $state<string | null>(null);
 	let pending = $state(false);
 	let errorMsg = $state<string | null>(null);
 
@@ -22,12 +25,17 @@
 
 	async function submit() {
 		errorMsg = null;
+		turnstileError = null;
+		if (!turnstileToken) {
+			errorMsg = 'Patvirtinkite, kad nesate robotas.';
+			return;
+		}
 		pending = true;
 		try {
 			const res = await fetch('/api/auth/prisijungimas', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ identifier, password })
+				body: JSON.stringify({ identifier, password, turnstileToken })
 			});
 			const payload = (await res.json().catch(() => null)) as unknown;
 			const rec = asRecord(payload);
@@ -91,6 +99,13 @@
 					bind:value={password}
 					required
 				/>
+			</div>
+
+			<div class="grid gap-2">
+				<Turnstile onToken={(t) => (turnstileToken = t)} onError={(m) => (turnstileError = m)} />
+				{#if turnstileError}
+					<p class="text-sm text-destructive">{turnstileError}</p>
+				{/if}
 			</div>
 
 			{#if errorMsg}

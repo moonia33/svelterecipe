@@ -17,13 +17,24 @@
 	async function goToSignup() {
 		const q = new SvelteURLSearchParams();
 		if (redirectTo && redirectTo !== '/receptai') q.set('redirectTo', redirectTo);
-		const href = `/registracija${q.size ? `?${q.toString()}` : ''}`;
+		const href = `/auth/registracija${q.size ? `?${q.toString()}` : ''}`;
+		await goto(resolve(...([href] as unknown as Parameters<typeof resolve>)));
+	}
+
+	async function goToForgot() {
+		const q = new SvelteURLSearchParams();
+		if (redirectTo && redirectTo !== '/receptai') q.set('redirectTo', redirectTo);
+		const href = `/auth/pamirsau-slaptazodi${q.size ? `?${q.toString()}` : ''}`;
 		await goto(resolve(...([href] as unknown as Parameters<typeof resolve>)));
 	}
 </script>
 
 <div class="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
 	<div class="w-full max-w-sm">
-		<LoginForm on:success={() => void onSuccess()} on:switchToSignup={() => void goToSignup()} />
+		<LoginForm
+			on:success={() => void onSuccess()}
+			on:switchToSignup={() => void goToSignup()}
+			on:forgot={() => void goToForgot()}
+		/>
 	</div>
 </div>
