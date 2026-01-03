@@ -32,6 +32,7 @@ type StepItem = {
 	order?: number | null;
 	number?: number | null;
 	duration?: number | null;
+	description?: string | null;
 	description_html?: string | null;
 	images?: ImageSet;
 	video_url?: string | null;
@@ -52,6 +53,9 @@ type RecipeDetail = {
 	difficulty?: string | null;
 	images?: ImageSet;
 	summary?: string | null;
+	is_generated?: boolean | null;
+	note?: string | null;
+	description?: string | null;
 	description_html?: string | null;
 	hero_text_html?: string | null;
 	preparation_time?: number | null;
@@ -113,6 +117,9 @@ export const load: PageServerLoad = async (event) => {
 		slug: data.slug,
 		title: data.title,
 		summary: data.summary ?? null,
+		isGenerated: data.is_generated ?? false,
+		note: data.note ?? null,
+		description: data.description ?? null,
 		difficulty: difficultyLt(data.difficulty ?? undefined),
 		prepTimeMin: data.preparation_time ?? null,
 		cookTimeMin: data.cooking_time ?? null,
@@ -121,6 +128,7 @@ export const load: PageServerLoad = async (event) => {
 		coverImage: pickImageUrl(data.images)
 			? { url: pickImageUrl(data.images), alternativeText: data.title }
 			: null,
+		// legacy: dar gali būti likęs HTML laukas kai kuriuose įrašuose
 		descriptionHtml: data.description_html ?? null,
 		heroTextHtml: data.hero_text_html ?? null,
 		categories: (data.categories ?? []) as Named[],

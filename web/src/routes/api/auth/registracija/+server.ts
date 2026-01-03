@@ -8,17 +8,34 @@ export const POST: RequestHandler = async (event) => {
 		username?: string;
 		email?: string;
 		password?: string;
+		newsletter_consent?: boolean;
+		privacy_policy_consent?: boolean;
+		terms_of_service_consent?: boolean;
 		turnstileToken?: string;
 	} | null;
 
 	const username = body?.username?.trim();
 	const email = body?.email?.trim();
 	const password = body?.password ?? '';
+	const newsletterConsent = body?.newsletter_consent === true;
+	const privacyPolicyConsent = body?.privacy_policy_consent === true;
+	const termsOfServiceConsent = body?.terms_of_service_consent === true;
 	const turnstileToken = body?.turnstileToken ?? '';
 
 	if (!username || !email || !password) {
 		return json(
 			{ message: 'Trūksta registracijos duomenų.', loggedIn: false, user: null },
+			{ status: 400 }
+		);
+	}
+
+	if (!privacyPolicyConsent || !termsOfServiceConsent) {
+		return json(
+			{
+				message: 'Būtina sutikti su privatumo politika ir naudojimo taisyklėmis.',
+				loggedIn: false,
+				user: null
+			},
 			{ status: 400 }
 		);
 	}
@@ -33,7 +50,14 @@ export const POST: RequestHandler = async (event) => {
 	const { res, data, setCookies } = await backendPostJson<Record<string, unknown>>(
 		event,
 		'/auth/register',
-		{ username, email, password },
+		{
+			username,
+			email,
+			password,
+			newsletter_consent: newsletterConsent,
+			privacy_policy_consent: privacyPolicyConsent,
+			terms_of_service_consent: termsOfServiceConsent
+		},
 		{ csrfToken, extraCookies: csrfCookies }
 	);
 

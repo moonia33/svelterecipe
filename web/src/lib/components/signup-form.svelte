@@ -2,6 +2,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import Turnstile from '$lib/components/auth/turnstile.svelte';
@@ -15,6 +16,9 @@
 	let email = $state('');
 	let password = $state('');
 	let passwordConfirmation = $state('');
+	let newsletterConsent = $state(false);
+	let privacyPolicyConsent = $state(false);
+	let termsOfServiceConsent = $state(false);
 	let turnstileToken = $state('');
 	let turnstileError = $state<string | null>(null);
 	let pending = $state(false);
@@ -31,6 +35,10 @@
 			errorMsg = 'Slaptažodžiai nesutampa.';
 			return;
 		}
+		if (!privacyPolicyConsent || !termsOfServiceConsent) {
+			errorMsg = 'Būtina sutikti su privatumo politika ir naudojimo taisyklėmis.';
+			return;
+		}
 		if (!turnstileToken) {
 			errorMsg = 'Patvirtinkite, kad nesate robotas.';
 			return;
@@ -41,7 +49,15 @@
 			const res = await fetch('/api/auth/registracija', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ username, email, password, turnstileToken })
+				body: JSON.stringify({
+					username,
+					email,
+					password,
+					newsletter_consent: newsletterConsent,
+					privacy_policy_consent: privacyPolicyConsent,
+					terms_of_service_consent: termsOfServiceConsent,
+					turnstileToken
+				})
 			});
 			const payload = (await res.json().catch(() => null)) as unknown;
 			const rec = asRecord(payload);
@@ -119,6 +135,30 @@
 					bind:value={passwordConfirmation}
 					required
 				/>
+			</div>
+
+			<div class="grid gap-3">
+				<div class="flex items-start gap-2">
+					<Checkbox bind:checked={privacyPolicyConsent} />
+					<div class="grid gap-0.5">
+						<span class="text-sm">Sutinku su privatumo politika</span>
+						<span class="text-xs text-muted-foreground">Privaloma</span>
+					</div>
+				</div>
+				<div class="flex items-start gap-2">
+					<Checkbox bind:checked={termsOfServiceConsent} />
+					<div class="grid gap-0.5">
+						<span class="text-sm">Sutinku su naudojimo taisyklėmis</span>
+						<span class="text-xs text-muted-foreground">Privaloma</span>
+					</div>
+				</div>
+				<div class="flex items-start gap-2">
+					<Checkbox bind:checked={newsletterConsent} />
+					<div class="grid gap-0.5">
+						<span class="text-sm">Noriu gauti naujienlaiškį</span>
+						<span class="text-xs text-muted-foreground">Nebūtina</span>
+					</div>
+				</div>
 			</div>
 
 			<div class="grid gap-2">

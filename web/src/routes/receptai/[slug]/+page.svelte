@@ -161,7 +161,20 @@
 
 	const recipeDescriptionHtml = $derived(
 		(() => {
-			return sanitizeHtmlString(recipe.heroTextHtml ?? recipe.descriptionHtml ?? '');
+			// Prioritetas:
+			// 1) legacy hero_text_html (jei yra)
+			// 2) naujas Markdown `description`
+			// 3) legacy `description_html` (fallback)
+			const hero = typeof recipe.heroTextHtml === 'string' ? recipe.heroTextHtml.trim() : '';
+			if (hero) return sanitizeHtmlString(hero);
+
+			const md =
+				typeof (recipe as { description?: unknown }).description === 'string'
+					? ((recipe as { description?: string }).description ?? '').trim()
+					: '';
+			if (md) return renderMarkdown(md);
+
+			return sanitizeHtmlString(recipe.descriptionHtml ?? '');
 		})()
 	);
 
