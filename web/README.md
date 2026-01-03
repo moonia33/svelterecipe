@@ -37,6 +37,10 @@ Profilio puslapyje sutikimai atnaujinami per SvelteKit proxy endpointą:
 
 Pastaba: state-changing requestams būtini slapukai (sesija) ir CSRF, todėl frontas naudoja serverinį route (proxy), o ne tiesioginį kvietimą į backend.
 
+## UI: maistinė vertė (nutrition)
+
+Recepto detalėje, jei backendas grąžina `nutrition` ir `nutrition_updated_at`, po ingredientų sąrašu rodoma maistinė vertė (per porciją), mikroelementai, alergenai ir pastabos.
+
 ## Contributing / Workflow
 
 Susitarimas šiame projekte:

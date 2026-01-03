@@ -54,6 +54,8 @@ type RecipeDetail = {
 	images?: ImageSet;
 	summary?: string | null;
 	is_generated?: boolean | null;
+	nutrition?: unknown | null;
+	nutrition_updated_at?: string | null;
 	note?: string | null;
 	description?: string | null;
 	description_html?: string | null;
@@ -118,6 +120,8 @@ export const load: PageServerLoad = async (event) => {
 		title: data.title,
 		summary: data.summary ?? null,
 		isGenerated: data.is_generated ?? false,
+		nutrition: data.nutrition ?? null,
+		nutritionUpdatedAt: data.nutrition_updated_at ?? null,
 		note: data.note ?? null,
 		description: data.description ?? null,
 		difficulty: difficultyLt(data.difficulty ?? undefined),

@@ -2,6 +2,17 @@
 
 Projektas naudoja **Django 5 + Django Ninja** ir ekspozuoja JSON API, kurią vartoja būsimasis Svelte/SPA frontendas. Šis dokumentas aprašo, kaip paleisti backendą, kokius endpointus turime, kokie laukų formatai, kokių saugumo reikalavimų laikytis ir kokia automatika (el. laiškai, vaizdai) vykdoma užkulisiuose.
 
+## Darbo eiga (sutarta)
+
+Kad nekauptume „neaiškių“ pokyčių ir frontendui visada būtų aišku kas pasikeitė, laikomės tokios taisyklės:
+
+1. Padarom pakeitimą kode.
+2. Patikrinam, kad veikia (bent: `poetry run python manage.py check` + migracijos jei buvo modelių pokyčių).
+3. Iškart papildom šitą README (API laukai, endpointai, changelog, pavyzdžiai).
+4. Iškart darom `git commit` ir `git push`.
+
+Pastaba: `.env`, `.venv`, `staticfiles/` į git nekeliam.
+
 ## 1. Paleidimas ir aplinka
 
 1. Įsidiek Poetry priklausomybes:
@@ -57,6 +68,7 @@ Naudingi skriptai: `poetry run python manage.py check`, `poetry run python manag
 - **RecipeSummarySchema** – `images`, `rating_average`, `rating_count`, `tags`, `is_bookmarked`.
 - **RecipeSummarySchema** – taip pat turi `is_generated` (AI sugeneruotas receptas).
 - **RecipeDetailSchema** – pratęsia summary su `note` (tip/pastaba), `categories`, `meal_types`, `cuisines`, `cooking_methods`, `ingredients`, `steps`, `comments`, `user_rating`.
+   - Taip pat gali turėti `nutrition` (JSON su maistine verte) ir `nutrition_updated_at` (kada paskutinį kartą perskaičiuota).
 - **CommentSchema** – `is_approved` nurodo ar komentaras viešas. Jei komentarą išsiuntė pats prisijungęs naudotojas, jis matys jį net ir kol nepatvirtintas.
 
 ## 5. API endpointai
@@ -242,6 +254,9 @@ Jei kokio nors šablono nėra arba jis išjungtas, loguose matysime įspėjimą,
    - `RecipeSummarySchema` ir `RecipeDetailSchema` turi `is_generated` – frontas gali aiškiai pažymėti AI sugeneruotus receptus.
 - **Admin / Markdown turinys**
    - `Recipe.note` ir `RecipeStep.note` (tip/pastaba) pridėti kaip paprastas tekstas.
+- **Recipes / nutrition (maistinė vertė)**
+   - `GET /api/recipes/{slug}` detalėje gali atsirasti `nutrition` ir `nutrition_updated_at` (kol kas `null`, kol job'ai neapdoroti).
+   - Pridėtas `RecipeNutritionJob` ir komanda `enqueue_recipe_nutrition_jobs` naktiniam job'ų suformavimui.
 
 ### 2026-01-02
 
@@ -297,6 +312,44 @@ Tikslas: prisijungęs vartotojas puslapyje susirenka ingredientus (iš DB + cust
 - Pradžiai paprasčiausia: prenumeratos planas (generacijų limitas) arba „credit“ sistema.
 - Webhook’ai + patikra server-side prieš įleidžiant į `POST /api/ai/recipe-jobs`.
 
+### 13.5 Maistinė vertė (nutrition) – batch/naktinis apdorojimas
+
+Tikslas: turėti maistinę vertę prie recepto (pvz. kcal, baltymai, riebalai, angliavandeniai, ir kt.) ir ją automatiškai perskaičiuoti, kai pasikeičia ingredientai.
+
+- `Recipe` modelyje yra laukai: `nutrition` (JSON), `nutrition_updated_at`, `nutrition_dirty`.
+- Kai pasikeičia `RecipeIngredient`, receptas automatiškai pažymimas `nutrition_dirty=true`.
+- Naktiniam job'ui yra `RecipeNutritionJob` modelis (statusai: queued/running/succeeded/failed).
+
+Komanda, kuri sukuria job'us (pvz. cron'ui arba vėliau Celery beat):
+
+```bash
+poetry run python manage.py enqueue_recipe_nutrition_jobs --limit=200
+```
+
+Komanda, kuri apdoroja job'us ir užpildo `Recipe.nutrition` (pirmai iteracijai – tiesiogiai per OpenAI, be Batch):
+
+```bash
+poetry run python manage.py process_recipe_nutrition_jobs --limit=20
+```
+
+Batch režimas (didesniam kiekiui per naktį):
+
+1) Submit batch iš `queued` job'ų:
+
+```bash
+poetry run python manage.py submit_recipe_nutrition_batch --limit=200
+```
+
+2) Poll batch ir importuok rezultatus (kai batch užbaigtas):
+
+```bash
+poetry run python manage.py poll_recipe_nutrition_batch --batch-id <OPENAI_BATCH_ID>
+```
+
+Jei `--batch-id` nenurodai, komanda bandys apdoroti visas `submitted` batch'ų grupes (iki kelių skirtingų batch'ų per vieną paleidimą).
+
+Nutrition JSON grąžina apytikslę maistinę vertę per porciją ir EU14 alergenus. Rekomenduojama UI visada rodyti, kad tai yra apytikslės reikšmės.
+
 ## 11. Greta esantys moduliai
 
 - `recipes/` – domeno modeliai, Ninja routeris, komentarų email logika.
@@ -304,3 +357,40 @@ Tikslas: prisijungęs vartotojas puslapyje susirenka ingredientus (iš DB + cust
 - `notifications/` – šablonizuoti el. laiškai ir helperiai (`send_templated_email`).
 
 Turėdami šią informaciją frontendistai gali saugiai naudotis esamu API, žinoti laukų struktūrą bei suprasti kokie automatiniai procesai vyksta be papildomo koordinavimo.
+
+
+Pavyzdinis TS map’as:s
+export const perServingLt: Record<string, string> = {
+  energy_kcal: 'Energija (kcal)',
+  protein_g: 'Baltymai (g)',
+  fat_g: 'Riebalai (g)',
+  saturated_fat_g: 'Sočiosios riebalų rūgštys (g)',
+  carbs_g: 'Angliavandeniai (g)',
+  sugars_g: 'Cukrūs (g)',
+  fiber_g: 'Skaidulos (g)',
+  salt_g: 'Druska (g)',
+};
+
+export const microsLt: Record<string, string> = {
+  cholesterol_mg: 'Cholesterolis (mg)',
+  potassium_mg: 'Kalis (mg)',
+  calcium_mg: 'Kalcis (mg)',
+  iron_mg: 'Geležis (mg)',
+};
+
+export const allergensLt: Record<string, string> = {
+  gluten: 'Glitimas',
+  crustaceans: 'Vėžiagyviai',
+  eggs: 'Kiaušiniai',
+  fish: 'Žuvis',
+  peanuts: 'Žemės riešutai',
+  soy: 'Soja',
+  milk: 'Pienas',
+  tree_nuts: 'Riešutai',
+  celery: 'Salierai',
+  mustard: 'Garstyčios',
+  sesame: 'Sezamai',
+  sulphites: 'Sulfitai',
+  lupin: 'Lubinai',
+  molluscs: 'Moliuskai',
+};

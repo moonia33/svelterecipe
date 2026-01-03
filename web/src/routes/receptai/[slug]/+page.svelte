@@ -223,6 +223,79 @@
 		return null;
 	}
 
+	const perServingLt: Record<string, string> = {
+		energy_kcal: 'Energija (kcal)',
+		protein_g: 'Baltymai (g)',
+		fat_g: 'Riebalai (g)',
+		saturated_fat_g: 'Sočiosios riebalų rūgštys (g)',
+		carbs_g: 'Angliavandeniai (g)',
+		sugars_g: 'Cukrūs (g)',
+		fiber_g: 'Skaidulos (g)',
+		salt_g: 'Druska (g)'
+	};
+
+	const microsLt: Record<string, string> = {
+		cholesterol_mg: 'Cholesterolis (mg)',
+		potassium_mg: 'Kalis (mg)',
+		calcium_mg: 'Kalcis (mg)',
+		iron_mg: 'Geležis (mg)'
+	};
+
+	const allergensLt: Record<string, string> = {
+		gluten: 'Glitimas',
+		crustaceans: 'Vėžiagyviai',
+		eggs: 'Kiaušiniai',
+		fish: 'Žuvis',
+		peanuts: 'Žemės riešutai',
+		soy: 'Soja',
+		milk: 'Pienas',
+		tree_nuts: 'Riešutai',
+		celery: 'Salierai',
+		mustard: 'Garstyčios',
+		sesame: 'Sezamai',
+		sulphites: 'Sulfitai',
+		lupin: 'Lubinai',
+		molluscs: 'Moliuskai'
+	};
+
+	function formatNutritionValue(value: unknown): string {
+		const n = asNumber(value);
+		if (n === null) return '';
+		return n.toLocaleString('lt-LT', { maximumFractionDigits: 2 });
+	}
+
+	function formatDateTime(raw: unknown): string {
+		if (typeof raw !== 'string' || !raw.trim()) return '';
+		const d = new Date(raw);
+		return Number.isFinite(d.getTime()) ? d.toLocaleString('lt-LT') : raw;
+	}
+
+	function nutritionUnit(key: string): string {
+		if (key.endsWith('_kcal')) return 'kcal';
+		if (key.endsWith('_mg')) return 'mg';
+		if (key.endsWith('_g')) return 'g';
+		return '';
+	}
+
+	function toStringArray(value: unknown): string[] {
+		if (!Array.isArray(value)) return [];
+		return value
+			.filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+			.map((x) => x.trim());
+	}
+
+	const nutrition = $derived(asObject((recipe as { nutrition?: unknown }).nutrition) ?? null);
+	const nutritionPerServing = $derived(asObject(nutrition?.per_serving) ?? null);
+	const nutritionMicros = $derived(asObject(nutrition?.micros) ?? null);
+	const nutritionAllergens = $derived(toStringArray(nutrition?.allergens));
+	const nutritionNotes = $derived(toStringArray(nutrition?.notes));
+	const nutritionDisclaimer = $derived(
+		typeof nutrition?.disclaimer === 'string' ? nutrition.disclaimer.trim() : ''
+	);
+	const nutritionUpdatedAtText = $derived(
+		formatDateTime((recipe as { nutritionUpdatedAt?: unknown }).nutritionUpdatedAt)
+	);
+
 	function pickImageUrl(images: unknown): string {
 		if (!images) return '';
 		if (typeof images === 'string') return images;
@@ -738,6 +811,86 @@
 						{/each}
 					{:else}
 						<p class="text-sm text-muted-foreground">Ingredientų sąrašas dar neparuoštas.</p>
+					{/if}
+
+					{#if nutrition}
+						<div class="mt-6 grid gap-3">
+							<Separator />
+							<h3 class="text-lg font-bold tracking-wide">Maistinė vertė</h3>
+							{#if nutritionUpdatedAtText}
+								<p class="text-xs text-muted-foreground">Atnaujinta: {nutritionUpdatedAtText}</p>
+							{/if}
+
+							{#if nutritionDisclaimer}
+								<p class="text-sm text-muted-foreground">{nutritionDisclaimer}</p>
+							{/if}
+
+							{#if nutritionPerServing}
+								<div class="grid gap-2">
+									<div class="text-xs font-semibold tracking-wide text-muted-foreground">
+										PER PORCIJĄ
+									</div>
+									<div class="grid grid-cols-2 gap-2 text-sm">
+										{#each Object.keys(perServingLt) as k (k)}
+											{@const raw = nutritionPerServing[k]}
+											{@const v = formatNutritionValue(raw)}
+											{#if v}
+												<div class="rounded-md border bg-card p-3">
+													<div class="text-xs text-muted-foreground">{perServingLt[k] ?? k}</div>
+													<div class="font-medium tabular-nums">{v} {nutritionUnit(k)}</div>
+												</div>
+											{/if}
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if nutritionMicros}
+								<div class="grid gap-2">
+									<div class="text-xs font-semibold tracking-wide text-muted-foreground">
+										MIKROELEMENTAI
+									</div>
+									<div class="grid grid-cols-2 gap-2 text-sm">
+										{#each Object.keys(microsLt) as k (k)}
+											{@const raw = nutritionMicros[k]}
+											{@const v = formatNutritionValue(raw)}
+											{#if v}
+												<div class="rounded-md border bg-card p-3">
+													<div class="text-xs text-muted-foreground">{microsLt[k] ?? k}</div>
+													<div class="font-medium tabular-nums">{v} {nutritionUnit(k)}</div>
+												</div>
+											{/if}
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if nutritionAllergens.length}
+								<div class="grid gap-2">
+									<div class="text-xs font-semibold tracking-wide text-muted-foreground">
+										ALERGENAI
+									</div>
+									<div class="flex flex-wrap gap-2">
+										{#each nutritionAllergens as a (a)}
+											<Badge variant="secondary">{allergensLt[a] ?? a}</Badge>
+										{/each}
+									</div>
+								</div>
+							{/if}
+
+							{#if nutritionNotes.length}
+								<div class="grid gap-2">
+									<div class="text-xs font-semibold tracking-wide text-muted-foreground">
+										PASTABOS
+									</div>
+									<ul class="grid list-disc gap-1 ps-4 text-sm text-muted-foreground">
+										{#each nutritionNotes as n (n)}
+											<li>{n}</li>
+										{/each}
+									</ul>
+								</div>
+							{/if}
+						</div>
 					{/if}
 				</div>
 			</section>
