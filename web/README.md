@@ -37,6 +37,13 @@ Profilio puslapyje sutikimai atnaujinami per SvelteKit proxy endpointą:
 
 Pastaba: state-changing requestams būtini slapukai (sesija) ir CSRF, todėl frontas naudoja serverinį route (proxy), o ne tiesioginį kvietimą į backend.
 
+## Contributing / Workflow
+
+Susitarimas šiame projekte:
+
+- Kai daromi pakeitimai, visada papildomai atnaujink README (jei pakeitimas keičia integraciją, API, paleidimą ar naudojimą).
+- Po pakeitimų visada atlik `git commit` ir `git push`.
+
 ## Building
 
 To create a production version of your app:
