@@ -25,6 +25,18 @@ npm run dev
 npm run dev -- --open
 ```
 
+## API: sutikimų atnaujinimas
+
+Profilio puslapyje sutikimai atnaujinami per SvelteKit proxy endpointą:
+
+- `POST /api/auth/consents` → persiunčia į backend `POST /api/auth/consents` (Django sesija + CSRF).
+- Payload (galima siųsti dalinai):
+  - `newsletter_consent: boolean`
+  - `privacy_policy_consent: boolean`
+  - `terms_of_service_consent: boolean`
+
+Pastaba: state-changing requestams būtini slapukai (sesija) ir CSRF, todėl frontas naudoja serverinį route (proxy), o ne tiesioginį kvietimą į backend.
+
 ## Building
 
 To create a production version of your app:
