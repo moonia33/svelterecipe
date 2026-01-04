@@ -18,8 +18,13 @@
 			'query-input': 'required name=search_term_string'
 		}
 	});
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const jsonLdJson = $derived(jsonLdStringify(jsonLd));
+	const jsonLdHtml = $derived(
+		(() => {
+			const open = '<script type="application/ld+json">';
+			const close = '</scr' + 'ipt>';
+			return open + jsonLdStringify(jsonLd) + close;
+		})()
+	);
 </script>
 
 <svelte:head>
@@ -37,10 +42,8 @@
 	<meta name="twitter:title" content={title} />
 	<meta name="twitter:description" content={description} />
 
-	<!-- prettier-ignore -->
-	<script type="application/ld+json">
-{jsonLdJson}
-	</script>
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html jsonLdHtml}
 </svelte:head>
 
 <div class="grid gap-6">

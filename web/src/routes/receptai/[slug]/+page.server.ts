@@ -63,6 +63,9 @@ type RecipeDetail = {
 	preparation_time?: number | null;
 	cooking_time?: number | null;
 	servings?: number | null;
+	published_at?: string | null;
+	meta_title?: string | null;
+	meta_description?: string | null;
 	categories?: Named[] | null;
 	cuisines?: Named[] | null;
 	cooking_methods?: Named[] | null;
@@ -129,6 +132,9 @@ export const load: PageServerLoad = async (event) => {
 		cookTimeMin: data.cooking_time ?? null,
 		totalTimeMin,
 		servings: data.servings ?? null,
+		publishedAt: data.published_at ?? null,
+		metaTitle: data.meta_title ?? null,
+		metaDescription: data.meta_description ?? null,
 		coverImage: pickImageUrl(data.images)
 			? { url: pickImageUrl(data.images), alternativeText: data.title }
 			: null,

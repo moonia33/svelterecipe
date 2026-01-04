@@ -44,9 +44,23 @@
 	let commentText = $state('');
 
 	const canonical = $derived(canonicalFromUrl(page.url));
-	const title = $derived(`${recipe.title} – Apetitas.lt`);
+	const title = $derived(
+		(() => {
+			const mt =
+				typeof (recipe as { metaTitle?: unknown }).metaTitle === 'string'
+					? ((recipe as { metaTitle?: string }).metaTitle ?? '').trim()
+					: '';
+			return mt || `${recipe.title} – Apetitas.lt`;
+		})()
+	);
 	const description = $derived(
 		(() => {
+			const metaDesc =
+				typeof (recipe as { metaDescription?: unknown }).metaDescription === 'string'
+					? ((recipe as { metaDescription?: string }).metaDescription ?? '').trim()
+					: '';
+			if (metaDesc) return truncate(metaDesc, 160);
+
 			const fromSummary = typeof recipe.summary === 'string' ? recipe.summary.trim() : '';
 			if (fromSummary) return truncate(fromSummary, 160);
 
@@ -68,11 +82,55 @@
 
 	const ogImage = $derived(ensureAbsoluteUrl(recipe.coverImage?.url ?? null, page.url.origin));
 
+	function facetQuery(key: string, value: string): string {
+		const v = value.trim();
+		if (!v) return '';
+		return `${encodeURIComponent(key)}=${encodeURIComponent(v)}`;
+	}
+
 	const jsonLd = $derived(
 		(() => {
 			const origin = page.url.origin;
 			const homeUrl = `${origin}${resolve('/')}`;
 			const listUrl = `${origin}${resolve('/receptai')}`;
+
+			const cuisineNames = (
+				(recipe.cuisines ?? []) as Array<{ name?: string | null; slug?: string | null }>
+			)
+				.map((x) => (x.name ?? x.slug ?? '').trim())
+				.filter(Boolean);
+			const categoryNames = (
+				(recipe.categories ?? []) as Array<{ name?: string | null; slug?: string | null }>
+			)
+				.map((x) => (x.name ?? x.slug ?? '').trim())
+				.filter(Boolean);
+
+			function asNumber(value: unknown): number | null {
+				if (typeof value === 'number' && Number.isFinite(value)) return value;
+				if (typeof value === 'string') {
+					const n = Number(value);
+					return Number.isFinite(n) ? n : null;
+				}
+				return null;
+			}
+
+			function formatNutritionNumber(value: unknown): string | null {
+				const n = asNumber(value);
+				if (n === null) return null;
+				return String(Number(n.toFixed(2)))
+					.replace(/\.0+$/, '')
+					.replace(/(\.[0-9]*?)0+$/, '$1');
+			}
+
+			const nutritionRaw = (recipe as { nutrition?: unknown }).nutrition;
+			const nutritionObj =
+				nutritionRaw && typeof nutritionRaw === 'object'
+					? (nutritionRaw as Record<string, unknown>)
+					: null;
+			const perServing =
+				nutritionObj?.per_serving && typeof nutritionObj.per_serving === 'object'
+					? (nutritionObj.per_serving as Record<string, unknown>)
+					: null;
 
 			const ingredients = (recipe.ingredients ?? [])
 				.map((item: unknown) => {
@@ -140,6 +198,12 @@
 				author: { '@type': 'Organization', name: 'Apetitas.lt' }
 			};
 
+			const publishedAt =
+				typeof (recipe as { publishedAt?: unknown }).publishedAt === 'string'
+					? ((recipe as { publishedAt?: string }).publishedAt ?? '').trim()
+					: '';
+			if (publishedAt) recipeLd.datePublished = publishedAt;
+
 			if (ogImage) recipeLd.image = [ogImage];
 			const prep = isoDurationFromMinutes(recipe.prepTimeMin ?? null);
 			const cook = isoDurationFromMinutes(recipe.cookTimeMin ?? null);
@@ -151,8 +215,32 @@
 				recipeLd.recipeYield = `${recipe.servings} porc.`;
 			}
 			if (keywords.length) recipeLd.keywords = keywords.join(', ');
+			if (cuisineNames.length) {
+				recipeLd.recipeCuisine = cuisineNames.length === 1 ? cuisineNames[0] : cuisineNames;
+			}
+			if (categoryNames.length) {
+				recipeLd.recipeCategory = categoryNames.length === 1 ? categoryNames[0] : categoryNames;
+			}
 			if (ingredients.length) recipeLd.recipeIngredient = ingredients;
 			if (steps.length) recipeLd.recipeInstructions = steps;
+			if (perServing) {
+				const kcal = formatNutritionNumber(perServing.energy_kcal);
+				const protein = formatNutritionNumber(perServing.protein_g);
+				const fat = formatNutritionNumber(perServing.fat_g);
+				const satFat = formatNutritionNumber(perServing.saturated_fat_g);
+				const carbs = formatNutritionNumber(perServing.carbs_g);
+
+				const nutritionLd: Record<string, unknown> = { '@type': 'NutritionInformation' };
+				if (kcal) nutritionLd.calories = `${kcal} kcal`;
+				if (protein) nutritionLd.proteinContent = `${protein} g`;
+				if (fat) nutritionLd.fatContent = `${fat} g`;
+				if (satFat) nutritionLd.saturatedFatContent = `${satFat} g`;
+				if (carbs) nutritionLd.carbohydrateContent = `${carbs} g`;
+
+				if (Object.keys(nutritionLd).length > 1) {
+					recipeLd.nutrition = nutritionLd;
+				}
+			}
 			if (
 				typeof recipe.ratingAverage === 'number' &&
 				Number.isFinite(recipe.ratingAverage) &&
@@ -163,7 +251,9 @@
 				recipeLd.aggregateRating = {
 					'@type': 'AggregateRating',
 					ratingValue: recipe.ratingAverage,
-					ratingCount: recipe.ratingCount
+					ratingCount: recipe.ratingCount,
+					bestRating: 5,
+					worstRating: 1
 				};
 			}
 
@@ -217,9 +307,15 @@
 		commentText = '';
 	});
 
-	function facetQuery(kind: string, slug: string) {
-		return `${encodeURIComponent(kind)}=${encodeURIComponent(slug)}`;
-	}
+	const jsonLdHtml = $derived(
+		(() => {
+			const open = '<script type="application/ld+json">';
+			const close = '</scr' + 'ipt>';
+			return open + jsonLdStringify(jsonLd) + close;
+		})()
+	);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	type _Keep = typeof jsonLdHtml;
 
 	function formatScaledQuantity(value: unknown, multiplier: number): string {
 		if (value === null || value === undefined) return '';
@@ -674,10 +770,8 @@
 		<meta name="twitter:image" content={ogImage} />
 	{/if}
 
-	<!-- prettier-ignore -->
-	<script type="application/ld+json">
-{jsonLdJson}
-	</script>
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html jsonLdHtml}
 </svelte:head>
 
 <div class="flex flex-col gap-6">
