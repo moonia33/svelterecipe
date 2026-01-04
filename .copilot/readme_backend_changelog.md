@@ -64,11 +64,14 @@ Naudingi skriptai: `poetry run python manage.py check`, `poetry run python manag
     "large": { "avif": "...", "webp": "..." }
   }
   ```
-  Visada naudok AVIF prioritetą su WEBP fallback; jei trūksta kurio nors varianto, gausi `null`.
+````
+
+<!-- EOF -->
 - **RecipeSummarySchema** – `images`, `rating_average`, `rating_count`, `tags`, `is_bookmarked`.
 - **RecipeSummarySchema** – taip pat turi `is_generated` (AI sugeneruotas receptas).
 - **RecipeDetailSchema** – pratęsia summary su `note` (tip/pastaba), `categories`, `meal_types`, `cuisines`, `cooking_methods`, `ingredients`, `steps`, `comments`, `user_rating`.
    - Taip pat gali turėti `nutrition` (JSON su maistine verte) ir `nutrition_updated_at` (kada paskutinį kartą perskaičiuota).
+   - Taip pat grąžina `meta_title` ir `meta_description` (SEO; naudojama frontendo `<title>` ir `<meta name="description">`).
 - **CommentSchema** – `is_approved` nurodo ar komentaras viešas. Jei komentarą išsiuntė pats prisijungęs naudotojas, jis matys jį net ir kol nepatvirtintas.
 
 ## 5. API endpointai
@@ -92,6 +95,27 @@ Laukų struktūrą apibrėžia `sitecontent/schemas.py`. Visos vizualios reikšm
 - `limit` 1..100, `offset` 0..N.
 - `search` ieško `title`, `description`.
 - Kiti filtrai naudoja susijusių objektų slugus.
+
+Filtrų pasirinkimų sąrašai (kad frontendas galėtų susirinkti dropdown'us):
+
+Lengvi (maži) filtrai vienu request'u:
+
+`GET /api/recipes/filters`
+
+Grąžina:
+- `cuisines[]` (id, name, slug)
+- `meal_types[]` (id, name, slug)
+- `cooking_methods[]` (id, name, slug)
+- `difficulties[]` (key, label)
+
+Dideliems sąrašams (geresnis našumas: paginacija + search) naudok atskirus endpointus:
+
+- `GET /api/recipes/categories?search=...&limit=50&offset=0&parent_id=...&root_only=true`
+- `GET /api/recipes/tags?search=...&limit=50&offset=0`
+- (papildomai, jei reikia paginuoti ir kitus):
+   - `GET /api/recipes/cuisines?search=...&limit=50&offset=0`
+   - `GET /api/recipes/meal-types?search=...&limit=50&offset=0`
+   - `GET /api/recipes/cooking-methods?search=...&limit=50&offset=0`
 - Atsakymas:
   ```json
   {
@@ -197,6 +221,19 @@ Frontendo seka:
 1. `GET /api/auth/session` → perskaitai `csrf_token` iš atsakymo (arba `csrftoken` slapuko).
 2. Visi vėlesni POST/DELETE turi headerį `X-CSRFToken: <csrftoken>` ir `credentials: 'include'`.
 3. Jei sesija pasensta, `session` endpointas vėl grąžins `is_authenticated: false`.
+
+---
+
+## Changelog (frontend) – SEO / microdata
+
+### 2026-01-04
+
+- Sutvarkytas SEO ir struktūrizuoti duomenys (JSON-LD) pagrindiniam puslapiui ir receptams.
+- Pridėta: `canonical` URL, `og:*` ir `twitter:*` meta.
+- JSON-LD:
+   - Pagrindinis puslapis: `WebSite` su `SearchAction` į `/paieska?q=...`.
+   - Receptų sąrašas: `BreadcrumbList` + `ItemList` (receptų kortelėms).
+   - Recepto detalė: `BreadcrumbList` + `Recipe` su laiko laukais (`prepTime`/`cookTime`/`totalTime`), ingredientais, žingsniais ir `aggregateRating` (jei turima).
 
 ## 6. El. laiškų automatika
 
@@ -350,6 +387,55 @@ Jei `--batch-id` nenurodai, komanda bandys apdoroti visas `submitted` batch'ų g
 
 Nutrition JSON grąžina apytikslę maistinę vertę per porciją ir EU14 alergenus. Rekomenduojama UI visada rodyti, kad tai yra apytikslės reikšmės.
 
+#### Deploy: automatinis paleidimas per systemd (rekomenduojama)
+
+Repo yra šablonai systemd unit/timer failams (naudojama lokali virtualenv, be Poetry):
+
+```bash
+sudo cp /home/deploy/backend/app/deploy/systemd/apetitas-nutrition-*.service /etc/systemd/system/
+sudo cp /home/deploy/backend/app/deploy/systemd/apetitas-nutrition-*.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now apetitas-nutrition-nightly.timer apetitas-nutrition-poll.timer
+```
+
+Patikrinimas:
+
+```bash
+systemctl list-timers --all | grep apetitas-nutrition
+journalctl -u apetitas-nutrition-nightly.service -n 100 --no-pager
+journalctl -u apetitas-nutrition-poll.service -n 100 --no-pager
+
+### 13.6 SEO meta (meta_title / meta_description) – naktinis užpildymas
+
+- `Recipe` modelyje yra laukai: `meta_title` (max 80) ir `meta_description` (max 160).
+- `Recipe.save()` automatiškai užpildo `meta_title = title`, bet senesni įrašai (arba bulk update/importai) gali likti su tuščiais meta laukais.
+- Naktinis job'as **užpildo tik tuščius** (`""` / whitespace) `meta_title` ir `meta_description`, sugeneruodamas reikšmes per **OpenAI** iš recepto konteksto (pavadinimo, aprašymo, virtuvių, meal type, kategorijų, tagų, gaminimo būdų ir ingredientų).
+- Naudojamas modelis konfigūruojamas per `.env` `OPENAI_META_MODEL` (default: `gpt-4o-mini`).
+
+Rankinis paleidimas:
+```bash
+poetry run python manage.py fill_missing_recipe_meta --limit=500
+poetry run python manage.py run_recipe_meta_nightly --limit=500
+```
+
+Dry-run (tik statistika, be DB pakeitimų):
+```bash
+poetry run python manage.py run_recipe_meta_nightly --limit=50 --dry-run
+```
+
+Systemd (produkcinis naktinis paleidimas):
+```bash
+sudo cp /home/deploy/backend/app/deploy/systemd/apetitas-meta-nightly.service /etc/systemd/system/
+sudo cp /home/deploy/backend/app/deploy/systemd/apetitas-meta-nightly.timer /etc/systemd/system/
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now apetitas-meta-nightly.timer
+
+systemctl list-timers --all | grep apetitas-meta
+journalctl -u apetitas-meta-nightly.service -n 100 --no-pager
+```
+```
+
 ## 11. Greta esantys moduliai
 
 - `recipes/` – domeno modeliai, Ninja routeris, komentarų email logika.
@@ -358,39 +444,41 @@ Nutrition JSON grąžina apytikslę maistinę vertę per porciją ir EU14 alerge
 
 Turėdami šią informaciją frontendistai gali saugiai naudotis esamu API, žinoti laukų struktūrą bei suprasti kokie automatiniai procesai vyksta be papildomo koordinavimo.
 
+### Frontend: nutrition laukų LT pavadinimai (pavyzdys)
 
-Pavyzdinis TS map’as:s
+```ts
 export const perServingLt: Record<string, string> = {
-  energy_kcal: 'Energija (kcal)',
-  protein_g: 'Baltymai (g)',
-  fat_g: 'Riebalai (g)',
-  saturated_fat_g: 'Sočiosios riebalų rūgštys (g)',
-  carbs_g: 'Angliavandeniai (g)',
-  sugars_g: 'Cukrūs (g)',
-  fiber_g: 'Skaidulos (g)',
-  salt_g: 'Druska (g)',
+   energy_kcal: 'Energija (kcal)',
+   protein_g: 'Baltymai (g)',
+   fat_g: 'Riebalai (g)',
+   saturated_fat_g: 'Sočiosios riebalų rūgštys (g)',
+   carbs_g: 'Angliavandeniai (g)',
+   sugars_g: 'Cukrūs (g)',
+   fiber_g: 'Skaidulos (g)',
+   salt_g: 'Druska (g)',
 };
 
 export const microsLt: Record<string, string> = {
-  cholesterol_mg: 'Cholesterolis (mg)',
-  potassium_mg: 'Kalis (mg)',
-  calcium_mg: 'Kalcis (mg)',
-  iron_mg: 'Geležis (mg)',
+   cholesterol_mg: 'Cholesterolis (mg)',
+   potassium_mg: 'Kalis (mg)',
+   calcium_mg: 'Kalcis (mg)',
+   iron_mg: 'Geležis (mg)',
 };
 
 export const allergensLt: Record<string, string> = {
-  gluten: 'Glitimas',
-  crustaceans: 'Vėžiagyviai',
-  eggs: 'Kiaušiniai',
-  fish: 'Žuvis',
-  peanuts: 'Žemės riešutai',
-  soy: 'Soja',
-  milk: 'Pienas',
-  tree_nuts: 'Riešutai',
-  celery: 'Salierai',
-  mustard: 'Garstyčios',
-  sesame: 'Sezamai',
-  sulphites: 'Sulfitai',
-  lupin: 'Lubinai',
-  molluscs: 'Moliuskai',
+   gluten: 'Glitimas',
+   crustaceans: 'Vėžiagyviai',
+   eggs: 'Kiaušiniai',
+   fish: 'Žuvis',
+   peanuts: 'Žemės riešutai',
+   soy: 'Soja',
+   milk: 'Pienas',
+   tree_nuts: 'Riešutai',
+   celery: 'Salierai',
+   mustard: 'Garstyčios',
+   sesame: 'Sezamai',
+   sulphites: 'Sulfitai',
+   lupin: 'Lubinai',
+   molluscs: 'Moliuskai',
 };
+```

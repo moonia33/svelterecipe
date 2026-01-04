@@ -2,14 +2,93 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import Clock from '@lucide/svelte/icons/clock';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
+	import { canonicalFromUrl, ensureAbsoluteUrl, jsonLdStringify } from '$lib/seo';
 	import type { PageData } from './$types';
 
 	let { data } = $props<{ data: PageData }>();
+
+	const title = 'Receptai – Apetitas.lt';
+	const description = 'Receptų sąrašas.';
+	const canonical = $derived(canonicalFromUrl(page.url));
+
+	const jsonLd = $derived(
+		(() => {
+			const origin = page.url.origin;
+			const base = `${origin}${resolve('/')}`;
+			const listUrl = canonical;
+
+			const itemListElement = (data.recipes ?? []).map(
+				(r: PageData['recipes'][number], i: number) => {
+					const url = `${origin}${resolve(
+						...([`/receptai/${r.slug}`] as unknown as Parameters<typeof resolve>)
+					)}`;
+					const img = ensureAbsoluteUrl(r.coverImage?.url ?? null, origin);
+					return {
+						'@type': 'ListItem',
+						position: i + 1,
+						item: {
+							'@type': 'Recipe',
+							name: r.title,
+							url,
+							...(img ? { image: [img] } : {})
+						}
+					};
+				}
+			);
+
+			return {
+				'@context': 'https://schema.org',
+				'@graph': [
+					{
+						'@type': 'BreadcrumbList',
+						itemListElement: [
+							{
+								'@type': 'ListItem',
+								position: 1,
+								name: 'Pagrindinis',
+								item: base
+							},
+							{
+								'@type': 'ListItem',
+								position: 2,
+								name: 'Receptai',
+								item: listUrl
+							}
+						]
+					},
+					{
+						'@type': 'ItemList',
+						name: 'Receptai',
+						itemListElement
+					}
+				]
+			};
+		})()
+	);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const jsonLdJson = $derived(jsonLdStringify(jsonLd));
 </script>
 
 <svelte:head>
-	<title>Receptai</title>
-	<meta name="description" content="Receptų sąrašas." />
+	<title>{title}</title>
+	<meta name="description" content={description} />
+	<link rel="canonical" href={canonical} />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:site_name" content="Apetitas.lt" />
+	<meta property="og:title" content={title} />
+	<meta property="og:description" content={description} />
+	<meta property="og:url" content={canonical} />
+
+	<meta name="twitter:card" content="summary" />
+	<meta name="twitter:title" content={title} />
+	<meta name="twitter:description" content={description} />
+
+	<!-- prettier-ignore -->
+	<script type="application/ld+json">
+{jsonLdJson}
+	</script>
 </svelte:head>
 
 <div class="bg-muted/30">

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { onDestroy, onMount } from 'svelte';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Button } from '$lib/components/ui/button';
@@ -12,6 +13,14 @@
 	import RecipeHero from '$lib/components/recipe/recipe-hero.svelte';
 	import CollapsibleDescription from '$lib/components/recipe/collapsible-description.svelte';
 	import { renderBlocks, renderMarkdown, sanitizeHtmlString } from '$lib/markdown';
+	import {
+		canonicalFromUrl,
+		ensureAbsoluteUrl,
+		isoDurationFromMinutes,
+		jsonLdStringify,
+		stripHtml,
+		truncate
+	} from '$lib/seo';
 
 	import type { PageData } from './$types';
 
@@ -33,6 +42,154 @@
 
 	let ratingValue = $state<number>(0);
 	let commentText = $state('');
+
+	const canonical = $derived(canonicalFromUrl(page.url));
+	const title = $derived(`${recipe.title} – Apetitas.lt`);
+	const description = $derived(
+		(() => {
+			const fromSummary = typeof recipe.summary === 'string' ? recipe.summary.trim() : '';
+			if (fromSummary) return truncate(fromSummary, 160);
+
+			const fromMd =
+				typeof (recipe as { description?: unknown }).description === 'string'
+					? (((recipe as { description?: string }).description ?? '') as string).trim()
+					: '';
+			if (fromMd) return truncate(fromMd, 160);
+
+			const fromLegacyHtml = stripHtml(
+				(typeof recipe.heroTextHtml === 'string' ? recipe.heroTextHtml : recipe.descriptionHtml) ??
+					''
+			);
+			if (fromLegacyHtml) return truncate(fromLegacyHtml, 160);
+
+			return `Receptas: ${recipe.title}`;
+		})()
+	);
+
+	const ogImage = $derived(ensureAbsoluteUrl(recipe.coverImage?.url ?? null, page.url.origin));
+
+	const jsonLd = $derived(
+		(() => {
+			const origin = page.url.origin;
+			const homeUrl = `${origin}${resolve('/')}`;
+			const listUrl = `${origin}${resolve('/receptai')}`;
+
+			const ingredients = (recipe.ingredients ?? [])
+				.map((item: unknown) => {
+					const qty = ingredientQtyText(item);
+					const name = ingredientTitle(item);
+					const note = ingredientNote(item);
+					return [qty, name].filter(Boolean).join(' ').trim() + (note ? ` (${note})` : '');
+				})
+				.map((x: string) => x.trim())
+				.filter(Boolean);
+
+			const rawSteps = (recipe.steps ?? []) as Array<{
+				order?: number | null;
+				number?: number | null;
+			}>;
+			const steps = rawSteps
+				.slice()
+				.sort(
+					(
+						a: { order?: number | null; number?: number | null },
+						b: { order?: number | null; number?: number | null }
+					) => (a.order ?? a.number ?? 0) - (b.order ?? b.number ?? 0)
+				)
+				.map((s: unknown, idx: number) => {
+					const html = stepDescriptionHtml(s);
+					const text = stripHtml(html);
+					return {
+						'@type': 'HowToStep',
+						position: idx + 1,
+						name:
+							typeof (s as { title?: unknown }).title === 'string'
+								? (((s as { title?: string }).title ?? '') as string).trim() || undefined
+								: undefined,
+						text: text || undefined
+					};
+				})
+				.filter((x: { text?: string; name?: string }) => x.text || x.name);
+
+			const keywords = [
+				...((recipe.categories ?? []) as Array<{ name?: string | null }>)
+					.map((x: { name?: string | null }) => x.name ?? '')
+					.filter(Boolean),
+				...((recipe.cuisines ?? []) as Array<{ name?: string | null }>)
+					.map((x: { name?: string | null }) => x.name ?? '')
+					.filter(Boolean),
+				...((recipe.mealTypes ?? []) as Array<{ name?: string | null }>)
+					.map((x: { name?: string | null }) => x.name ?? '')
+					.filter(Boolean),
+				...((recipe.cookingMethods ?? []) as Array<{ name?: string | null }>)
+					.map((x: { name?: string | null }) => x.name ?? '')
+					.filter(Boolean),
+				...((recipe.tags ?? []) as Array<{ name?: string | null }>)
+					.map((x: { name?: string | null }) => x.name ?? '')
+					.filter(Boolean)
+			]
+				.map((x: string) => String(x).trim())
+				.filter(Boolean);
+
+			const recipeLd: Record<string, unknown> = {
+				'@type': 'Recipe',
+				name: recipe.title,
+				description,
+				url: canonical,
+				mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+				author: { '@type': 'Organization', name: 'Apetitas.lt' }
+			};
+
+			if (ogImage) recipeLd.image = [ogImage];
+			const prep = isoDurationFromMinutes(recipe.prepTimeMin ?? null);
+			const cook = isoDurationFromMinutes(recipe.cookTimeMin ?? null);
+			const total = isoDurationFromMinutes(recipe.totalTimeMin ?? null);
+			if (prep) recipeLd.prepTime = prep;
+			if (cook) recipeLd.cookTime = cook;
+			if (total) recipeLd.totalTime = total;
+			if (typeof recipe.servings === 'number' && recipe.servings > 0) {
+				recipeLd.recipeYield = `${recipe.servings} porc.`;
+			}
+			if (keywords.length) recipeLd.keywords = keywords.join(', ');
+			if (ingredients.length) recipeLd.recipeIngredient = ingredients;
+			if (steps.length) recipeLd.recipeInstructions = steps;
+			if (
+				typeof recipe.ratingAverage === 'number' &&
+				Number.isFinite(recipe.ratingAverage) &&
+				typeof recipe.ratingCount === 'number' &&
+				Number.isFinite(recipe.ratingCount) &&
+				recipe.ratingCount > 0
+			) {
+				recipeLd.aggregateRating = {
+					'@type': 'AggregateRating',
+					ratingValue: recipe.ratingAverage,
+					ratingCount: recipe.ratingCount
+				};
+			}
+
+			return {
+				'@context': 'https://schema.org',
+				'@graph': [
+					{
+						'@type': 'BreadcrumbList',
+						itemListElement: [
+							{ '@type': 'ListItem', position: 1, name: 'Pagrindinis', item: homeUrl },
+							{ '@type': 'ListItem', position: 2, name: 'Receptai', item: listUrl },
+							{
+								'@type': 'ListItem',
+								position: 3,
+								name: recipe.title,
+								item: canonical
+							}
+						]
+					},
+					recipeLd
+				]
+			};
+		})()
+	);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const jsonLdJson = $derived(jsonLdStringify(jsonLd));
 
 	function asObject(value: unknown): Record<string, unknown> | null {
 		if (!value || typeof value !== 'object') return null;
@@ -497,10 +654,30 @@
 </script>
 
 <svelte:head>
-	<title>{recipe.title} – Receptai</title>
-	{#if recipe.summary}
-		<meta name="description" content={recipe.summary} />
+	<title>{title}</title>
+	<meta name="description" content={description} />
+	<link rel="canonical" href={canonical} />
+
+	<meta property="og:type" content="article" />
+	<meta property="og:site_name" content="Apetitas.lt" />
+	<meta property="og:title" content={recipe.title} />
+	<meta property="og:description" content={description} />
+	<meta property="og:url" content={canonical} />
+	{#if ogImage}
+		<meta property="og:image" content={ogImage} />
 	{/if}
+
+	<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+	<meta name="twitter:title" content={recipe.title} />
+	<meta name="twitter:description" content={description} />
+	{#if ogImage}
+		<meta name="twitter:image" content={ogImage} />
+	{/if}
+
+	<!-- prettier-ignore -->
+	<script type="application/ld+json">
+{jsonLdJson}
+	</script>
 </svelte:head>
 
 <div class="flex flex-col gap-6">
