@@ -32,6 +32,12 @@
 				>
 				<a
 					class="rounded-md px-3 py-2 text-sm hover:bg-accent"
+					href={resolve('/paskyra/ai-receptai')}
+				>
+					AI receptai
+				</a>
+				<a
+					class="rounded-md px-3 py-2 text-sm hover:bg-accent"
 					href={resolve('/paskyra/mano-apetitas')}>Mano Apetitas</a
 				>
 				<a

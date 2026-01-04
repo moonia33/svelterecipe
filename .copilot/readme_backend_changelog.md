@@ -288,6 +288,14 @@ Jei kokio nors šablono nėra arba jis išjungtas, loguose matysime įspėjimą,
    - `GET /api/recipes/{slug}` detalėje gali atsirasti `nutrition` ir `nutrition_updated_at` (kol kas `null`, kol job'ai neapdoroti).
    - Pridėtas `RecipeNutritionJob` ir komanda `enqueue_recipe_nutrition_jobs` naktiniam job'ų suformavimui.
 
+### 2026-01-04
+
+- **AI / hero paveikslo job'ai**
+   - Pridėtas `RecipeImageJob` (atskirai nuo recepto generavimo), kad paveikslas gali būti sugeneruotas vėliau.
+   - Nauji endpointai: `POST /api/ai/recipe-image-jobs`, `GET /api/ai/recipe-image-jobs/{id}`.
+   - Naujos komandos: `enqueue_recipe_image_jobs`, `process_recipe_image_jobs`, `run_recipe_image_nightly`.
+   - Nauji `.env` kintamieji: `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_SIZE`.
+
 ### 2026-01-02
 
 - **Auth / slaptažodžio atkūrimas**
@@ -318,17 +326,130 @@ Tikslas: prisijungęs vartotojas puslapyje susirenka ingredientus (iš DB + cust
 - **Nauji endpointai** (Ninja, CSRF + prisijungęs):
    - `POST /api/ai/recipe-jobs` – sukuria job’ą ir grąžina `job_id`.
    - `GET /api/ai/recipe-jobs/{id}` – grąžina būseną; kai baigta – ir sugeneruoto recepto slug/id.
+
+#### 13.1.1 `POST /api/ai/recipe-jobs`
+
+Auth: privaloma (Django sesija) + CSRF.
+
+Payload (MVP):
+
+```json
+{
+   "dish_type": "desertas",
+   "prep_speed": "greitas",
+   "have_ingredient_ids": [12, 44],
+   "have_ingredients_text": ["kiaušiniai"],
+   "can_buy_ingredient_ids": [98],
+   "can_buy_ingredients_text": ["grietinėlė"],
+   "exclude": ["svogūnai", "česnakai", "laktozė"]
+}
+```
+
+Pastabos:
+- `have_*` – ką turiu namuose (AI turi prioritetą naudoti).
+- `can_buy_*` – ką galiu nupirkti (laisva; AI gali pasiūlyti ir papildomų ingredientų).
+- `exclude[]` – GRIEŽTI draudimai (turi būti tuščia arba sąrašas). Frontende traktuoti kaip „be ...“.
+
+Atsakymas:
+
+```json
+{
+   "job_id": 123,
+   "status": "queued"
+}
+```
+
+#### 13.1.2 `GET /api/ai/recipe-jobs/{id}`
+
+Auth: privaloma (Django sesija). CSRF nereikia.
+
+Statusų reikšmės:
+- `queued` – laukia apdorojimo
+- `running` – vykdomas
+- `succeeded` – sugeneruotas receptas įrašytas į DB
+- `failed` – klaida (žr. `error`)
+
+Atsakymas (vykdoma):
+
+```json
+{
+   "job_id": 123,
+   "status": "running",
+   "created_at": "2026-01-04T10:00:00+00:00",
+   "started_at": "2026-01-04T10:00:05+00:00",
+   "finished_at": null,
+   "result_recipe_id": null,
+   "result_recipe_slug": null,
+   "error": ""
+}
+```
+
+Atsakymas (pavyko):
+
+```json
+{
+   "job_id": 123,
+   "status": "succeeded",
+   "created_at": "2026-01-04T10:00:00+00:00",
+   "started_at": "2026-01-04T10:00:05+00:00",
+   "finished_at": "2026-01-04T10:00:15+00:00",
+   "result_recipe_id": 987,
+   "result_recipe_slug": "obuoliu-desertas-per-15-minuciu",
+   "error": ""
+}
+```
+
+Atsakymas (klaida):
+
+```json
+{
+   "job_id": 123,
+   "status": "failed",
+   "created_at": "2026-01-04T10:00:00+00:00",
+   "started_at": "2026-01-04T10:00:05+00:00",
+   "finished_at": "2026-01-04T10:00:06+00:00",
+   "result_recipe_id": null,
+   "result_recipe_slug": null,
+   "error": "OpenAI grąžino tuščią atsakymą"
+}
+```
 - **Asinchroninis vykdymas**:
-   - Generavimas vykdomas worker’yje (Celery/RQ + Redis), ne HTTP request’e.
+   - MVP generavimas vykdomas management komandoje (be Celery), ne HTTP request’e.
+
+Rankinis workerio paleidimas (MVP):
+
+```bash
+poetry run python manage.py process_recipe_generation_jobs --limit=10
+```
 - **Rezultato įrašymas**:
    - Sukuriamas `Recipe` su `is_generated=true`, `description` (Markdown), `note` (tip, jei yra).
    - Sukuriami `RecipeStep` su `description` (Markdown) ir `note` (nebūtina).
    - Ingredientai map’inami į esamus `Ingredient`; nerasti – arba kuriami nauji (jei pasirinkta), arba paliekami kaip tekstinė pastaba ingredientų eilutėje.
 
+MVP pastaba: ingredientai įrašomi kaip `RecipeIngredient` (su amount+unit), kad frontendui veiktų normalus ingredientų sąrašas.
+
 ### 13.2 Vaizdas (atskirai nuo MVP)
 
 - Vaizdo generavimą verta daryti kaip **antrą job’ą** (pvz. `RecipeImageJob`), kad receptas atsirastų greitai, o hero paveikslas „prisikabintų“ vėliau.
 - Sugeneruotas failas įkeliamas į R2 per esamą storage; tada suveikia įprasta image variantų grandinė.
+
+Backend palaiko atskirą paveikslo job'ą:
+
+- `POST /api/ai/recipe-image-jobs` (CSRF + prisijungęs) – sukuria job'ą konkrečiam AI receptui.
+   - Payload: `{ "recipe_id": 123 }` arba `{ "recipe_slug": "..." }`
+- `GET /api/ai/recipe-image-jobs/{id}` (prisijungęs) – poll'inamas statusas.
+
+Rankinis paleidimas ("batch" per naktį = paleisti komandas cron/systemd, neblokuojant UI):
+
+```bash
+poetry run python manage.py enqueue_recipe_image_jobs --limit=200
+poetry run python manage.py process_recipe_image_jobs --limit=20
+```
+
+Konfigūracija per `.env`:
+- `OPENAI_IMAGE_MODEL` (default: `gpt-image-1`)
+- `OPENAI_IMAGE_FALLBACK_MODEL` (default: `dall-e-3`) – jei pagrindinis modelis nepasiekiamas (pvz. reikia org verifikacijos)
+- `OPENAI_IMAGE_SIZE` (default: `1024x1024`)
 
 ### 13.3 Kokybė, sauga ir moderavimas
 
