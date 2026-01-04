@@ -116,6 +116,12 @@ Dideliems sąrašams (geresnis našumas: paginacija + search) naudok atskirus en
    - `GET /api/recipes/cuisines?search=...&limit=50&offset=0`
    - `GET /api/recipes/meal-types?search=...&limit=50&offset=0`
    - `GET /api/recipes/cooking-methods?search=...&limit=50&offset=0`
+
+Ingredientams (ingredientų picker'iui):
+
+- `GET /api/recipes/ingredient-categories?search=...&limit=50&offset=0&parent_id=...&root_only=true`
+- `GET /api/recipes/ingredients?search=...&limit=50&offset=0&category=<CATEGORY_SLUG>`
+   - `items[].category` grąžina `id/name/slug/parent_id`, kad frontendas galėtų grupuoti pagal kategorijas.
 - Atsakymas:
   ```json
   {
@@ -221,19 +227,6 @@ Frontendo seka:
 1. `GET /api/auth/session` → perskaitai `csrf_token` iš atsakymo (arba `csrftoken` slapuko).
 2. Visi vėlesni POST/DELETE turi headerį `X-CSRFToken: <csrftoken>` ir `credentials: 'include'`.
 3. Jei sesija pasensta, `session` endpointas vėl grąžins `is_authenticated: false`.
-
----
-
-## Changelog (frontend) – SEO / microdata
-
-### 2026-01-04
-
-- Sutvarkytas SEO ir struktūrizuoti duomenys (JSON-LD) pagrindiniam puslapiui ir receptams.
-- Pridėta: `canonical` URL, `og:*` ir `twitter:*` meta.
-- JSON-LD:
-   - Pagrindinis puslapis: `WebSite` su `SearchAction` į `/paieska?q=...`.
-   - Receptų sąrašas: `BreadcrumbList` + `ItemList` (receptų kortelėms).
-   - Recepto detalė: `BreadcrumbList` + `Recipe` su laiko laukais (`prepTime`/`cookTime`/`totalTime`), ingredientais, žingsniais ir `aggregateRating` (jei turima).
 
 ## 6. El. laiškų automatika
 
