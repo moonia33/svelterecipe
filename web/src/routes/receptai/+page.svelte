@@ -45,6 +45,7 @@
 				search: null,
 				tag: null,
 				category: null,
+				ingredient_category: null,
 				cuisine: null,
 				meal_type: null,
 				cooking_method: null,
@@ -94,6 +95,7 @@
 	let mealTypeOpen = $state(false);
 	let cookingMethodOpen = $state(false);
 	let categoryOpen = $state(false);
+	let ingredientCategoryOpen = $state(false);
 	let tagOpen = $state(false);
 
 	let categorySearch = $state('');
@@ -104,8 +106,13 @@
 	let tagLoading = $state(false);
 	let categoryError = $state<string | null>(null);
 	let tagError = $state<string | null>(null);
+	let ingredientCategorySearch = $state('');
+	let ingredientCategoryItems = $state<Named[]>([]);
+	let ingredientCategoryLoading = $state(false);
+	let ingredientCategoryError = $state<string | null>(null);
 	let _catReq = 0;
 	let _tagReq = 0;
+	let _ingCatReq = 0;
 
 	function queryString(params: Record<string, string | null | undefined>): string {
 		const parts: string[] = [];
@@ -164,6 +171,31 @@
 				}
 			} finally {
 				if (reqId === _tagReq) tagLoading = false;
+			}
+		}, 250);
+		return () => clearTimeout(t);
+	});
+
+	$effect(() => {
+		if (!ingredientCategoryOpen) return;
+		ingredientCategoryError = null;
+		ingredientCategoryLoading = true;
+		const reqId = ++_ingCatReq;
+		const t = setTimeout(async () => {
+			try {
+				const items = await fetchNamedList(
+					'/api/recipes/ingredient-categories',
+					ingredientCategorySearch
+				);
+				if (reqId === _ingCatReq) ingredientCategoryItems = items;
+			} catch (e) {
+				if (reqId === _ingCatReq) {
+					ingredientCategoryError =
+						e instanceof Error ? e.message : 'Nepavyko užkrauti ingredientų kategorijų.';
+					ingredientCategoryItems = [];
+				}
+			} finally {
+				if (reqId === _ingCatReq) ingredientCategoryLoading = false;
 			}
 		}, 250);
 		return () => clearTimeout(t);
@@ -262,7 +294,7 @@
 		<div class="mx-auto max-w-2xl py-12 sm:py-16 lg:max-w-none lg:py-20">
 			<div class="flex flex-wrap items-center justify-between gap-3">
 				<h1 class="text-2xl font-bold tracking-tight text-foreground">Receptai</h1>
-				{#if cleanValue(data.query?.search) || cleanValue(data.query?.tag) || cleanValue(data.query?.category) || cleanValue(data.query?.cuisine) || cleanValue(data.query?.meal_type) || cleanValue(data.query?.cooking_method) || cleanValue(data.query?.difficulty)}
+				{#if cleanValue(data.query?.search) || cleanValue(data.query?.tag) || cleanValue(data.query?.category) || cleanValue(data.query?.ingredient_category) || cleanValue(data.query?.cuisine) || cleanValue(data.query?.meal_type) || cleanValue(data.query?.cooking_method) || cleanValue(data.query?.difficulty)}
 					<Button variant="outline" size="sm" onclick={clearAllFilters}>Išvalyti filtrus</Button>
 				{/if}
 			</div>
@@ -293,24 +325,39 @@
 				</div>
 
 				<div class="flex flex-wrap gap-2">
-					<Button variant="outline" size="sm" onclick={() => (difficultyOpen = true)}>
+					<Button type="button" variant="outline" size="sm" onclick={() => (difficultyOpen = true)}>
 						Sudėtingumas{selectedDifficultyLabel ? `: ${selectedDifficultyLabel}` : ''}
 					</Button>
-					<Button variant="outline" size="sm" onclick={() => (cuisineOpen = true)}>
+					<Button type="button" variant="outline" size="sm" onclick={() => (cuisineOpen = true)}>
 						Virtuvė{selectedCuisineLabel ? `: ${selectedCuisineLabel}` : ''}
 					</Button>
-					<Button variant="outline" size="sm" onclick={() => (mealTypeOpen = true)}>
+					<Button type="button" variant="outline" size="sm" onclick={() => (mealTypeOpen = true)}>
 						Valgio tipas{selectedMealTypeLabel ? `: ${selectedMealTypeLabel}` : ''}
 					</Button>
-					<Button variant="outline" size="sm" onclick={() => (cookingMethodOpen = true)}>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onclick={() => (cookingMethodOpen = true)}
+					>
 						Metodas{selectedCookingMethodLabel ? `: ${selectedCookingMethodLabel}` : ''}
 					</Button>
-					<Button variant="outline" size="sm" onclick={() => (categoryOpen = true)}>
+					<Button type="button" variant="outline" size="sm" onclick={() => (categoryOpen = true)}>
 						Kategorija{cleanValue(data.query?.category)
 							? `: ${cleanValue(data.query?.category)}`
 							: ''}
 					</Button>
-					<Button variant="outline" size="sm" onclick={() => (tagOpen = true)}>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						onclick={() => (ingredientCategoryOpen = true)}
+					>
+						Ingredientai{cleanValue(data.query?.ingredient_category)
+							? `: ${cleanValue(data.query?.ingredient_category)}`
+							: ''}
+					</Button>
+					<Button type="button" variant="outline" size="sm" onclick={() => (tagOpen = true)}>
 						Tagas{cleanValue(data.query?.tag) ? `: ${cleanValue(data.query?.tag)}` : ''}
 					</Button>
 				</div>
@@ -320,9 +367,14 @@
 						<Badge variant="secondary" class="gap-2">
 							Sudėtingumas: {selectedDifficultyLabel || cleanValue(data.query?.difficulty)}
 							<button
+								type="button"
 								class="rounded px-1 hover:bg-accent"
 								aria-label="Pašalinti sudėtingumą"
-								onclick={() => setQueryParams({ difficulty: null }, { resetOffset: true })}
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ difficulty: null }, { resetOffset: true })
+								)}
 							>
 								×
 							</button>
@@ -332,9 +384,14 @@
 						<Badge variant="secondary" class="gap-2">
 							Virtuvė: {selectedCuisineLabel || cleanValue(data.query?.cuisine)}
 							<button
+								type="button"
 								class="rounded px-1 hover:bg-accent"
 								aria-label="Pašalinti virtuvę"
-								onclick={() => setQueryParams({ cuisine: null }, { resetOffset: true })}
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ cuisine: null }, { resetOffset: true })
+								)}
 							>
 								×
 							</button>
@@ -344,9 +401,14 @@
 						<Badge variant="secondary" class="gap-2">
 							Valgio tipas: {selectedMealTypeLabel || cleanValue(data.query?.meal_type)}
 							<button
+								type="button"
 								class="rounded px-1 hover:bg-accent"
 								aria-label="Pašalinti valgio tipą"
-								onclick={() => setQueryParams({ meal_type: null }, { resetOffset: true })}
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ meal_type: null }, { resetOffset: true })
+								)}
 							>
 								×
 							</button>
@@ -356,9 +418,14 @@
 						<Badge variant="secondary" class="gap-2">
 							Metodas: {selectedCookingMethodLabel || cleanValue(data.query?.cooking_method)}
 							<button
+								type="button"
 								class="rounded px-1 hover:bg-accent"
 								aria-label="Pašalinti metodą"
-								onclick={() => setQueryParams({ cooking_method: null }, { resetOffset: true })}
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ cooking_method: null }, { resetOffset: true })
+								)}
 							>
 								×
 							</button>
@@ -368,9 +435,31 @@
 						<Badge variant="secondary" class="gap-2">
 							Kategorija: {cleanValue(data.query?.category)}
 							<button
+								type="button"
 								class="rounded px-1 hover:bg-accent"
 								aria-label="Pašalinti kategoriją"
-								onclick={() => setQueryParams({ category: null }, { resetOffset: true })}
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ category: null }, { resetOffset: true })
+								)}
+							>
+								×
+							</button>
+						</Badge>
+					{/if}
+					{#if cleanValue(data.query?.ingredient_category)}
+						<Badge variant="secondary" class="gap-2">
+							Ingredientai: {cleanValue(data.query?.ingredient_category)}
+							<button
+								type="button"
+								class="rounded px-1 hover:bg-accent"
+								aria-label="Pašalinti ingredientų kategoriją"
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ ingredient_category: null }, { resetOffset: true })
+								)}
 							>
 								×
 							</button>
@@ -380,9 +469,14 @@
 						<Badge variant="secondary" class="gap-2">
 							Tagas: {cleanValue(data.query?.tag)}
 							<button
+								type="button"
 								class="rounded px-1 hover:bg-accent"
 								aria-label="Pašalinti tagą"
-								onclick={() => setQueryParams({ tag: null }, { resetOffset: true })}
+								onclick={(e) => (
+									e.preventDefault(),
+									e.stopPropagation(),
+									setQueryParams({ tag: null }, { resetOffset: true })
+								)}
 							>
 								×
 							</button>
@@ -444,9 +538,9 @@
 						size="sm"
 						disabled={data.offset <= 0}
 						onclick={() => {
-							const nextOffset = Math.max(0, (data.offset ?? 0) - (data.limit ?? 24));
+							const nextOffset = Math.max(0, (data.offset ?? 0) - (data.limit ?? 20));
 							setQueryParams(
-								{ offset: String(nextOffset), limit: String(data.limit ?? 24) },
+								{ offset: String(nextOffset), limit: String(data.limit ?? 20) },
 								{ resetOffset: false }
 							);
 						}}
@@ -456,11 +550,11 @@
 					<Button
 						variant="outline"
 						size="sm"
-						disabled={(data.offset ?? 0) + (data.limit ?? 24) >= (data.total ?? 0)}
+						disabled={(data.offset ?? 0) + (data.limit ?? 20) >= (data.total ?? 0)}
 						onclick={() => {
-							const nextOffset = (data.offset ?? 0) + (data.limit ?? 24);
+							const nextOffset = (data.offset ?? 0) + (data.limit ?? 20);
 							setQueryParams(
-								{ offset: String(nextOffset), limit: String(data.limit ?? 24) },
+								{ offset: String(nextOffset), limit: String(data.limit ?? 20) },
 								{ resetOffset: false }
 							);
 						}}
@@ -646,6 +740,60 @@
 								onclick={() => (
 									setQueryParams({ category: c.slug ?? c.name ?? '' }, { resetOffset: true }),
 									(categoryOpen = false)
+								)}
+							>
+								{c.name ?? c.slug}
+							</Button>
+						{/if}
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Dialog.Root bind:open={ingredientCategoryOpen}>
+	<Dialog.Content class="max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Ingredientų kategorija</Dialog.Title>
+			<Dialog.Description>Ieškok ir pasirink ingredientų kategoriją.</Dialog.Description>
+		</Dialog.Header>
+		<div class="mt-4 grid gap-3">
+			<Input placeholder="Paieška..." bind:value={ingredientCategorySearch} />
+			<div class="flex justify-between gap-2">
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => (
+						setQueryParams({ ingredient_category: null }, { resetOffset: true }),
+						(ingredientCategoryOpen = false)
+					)}
+				>
+					Išvalyti
+				</Button>
+				<Button variant="secondary" size="sm" onclick={() => (ingredientCategorySearch = '')}>
+					Išvalyti paiešką
+				</Button>
+			</div>
+			{#if ingredientCategoryError}
+				<p class="text-sm text-destructive">{ingredientCategoryError}</p>
+			{/if}
+			{#if ingredientCategoryLoading}
+				<p class="text-sm text-muted-foreground">Kraunama...</p>
+			{:else}
+				<div class="grid max-h-80 gap-2 overflow-auto">
+					{#each ingredientCategoryItems as c (c.id)}
+						{#if c.slug || c.name}
+							<Button
+								variant={cleanValue(data.query?.ingredient_category) === cleanValue(c.slug)
+									? 'default'
+									: 'outline'}
+								onclick={() => (
+									setQueryParams(
+										{ ingredient_category: c.slug ?? c.name ?? '' },
+										{ resetOffset: true }
+									),
+									(ingredientCategoryOpen = false)
 								)}
 							>
 								{c.name ?? c.slug}

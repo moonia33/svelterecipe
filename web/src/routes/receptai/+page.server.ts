@@ -65,8 +65,8 @@ export const load: PageServerLoad = async (event) => {
 	const sp = event.url.searchParams;
 	const limit = (() => {
 		const raw = Number(sp.get('limit') ?? '');
-		if (!Number.isFinite(raw)) return 24;
-		return Math.min(100, Math.max(1, Math.trunc(raw)));
+		if (!Number.isFinite(raw)) return 20;
+		return Math.min(100, Math.max(20, Math.trunc(raw)));
 	})();
 	const offset = (() => {
 		const raw = Number(sp.get('offset') ?? '');
@@ -78,6 +78,7 @@ export const load: PageServerLoad = async (event) => {
 		'search',
 		'tag',
 		'category',
+		'ingredient_category',
 		'cuisine',
 		'meal_type',
 		'cooking_method',
